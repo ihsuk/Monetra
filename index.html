@@ -1,0 +1,4492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monetra — Autonomous ML Model Monitoring & Failure Prediction</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700;800&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg0: #121316;
+      --bg1: #18191d;
+      --bg2: rgba(28, 28, 30, .85);
+      --bg3: rgba(24, 24, 27, .6);
+      --bg4: rgba(32, 32, 35, .65);
+      --brd: rgba(255, 255, 255, .06);
+      --brd2: rgba(255, 255, 255, .08);
+      --cy: #00e6ff;
+      --cy2: rgba(0, 230, 255, .10);
+      --cy3: #005f6b;
+      --gn: #00ff9d;
+      --gn2: rgba(0, 255, 157, .1);
+      --am: #ffab00;
+      --am2: rgba(255, 171, 0, .1);
+      --rd: #ff3d5a;
+      --rd2: rgba(255, 61, 90, .1);
+      --pu: #a855f7;
+      --pu2: rgba(168, 85, 247, .1);
+      --or: #ff7c00;
+      --or2: rgba(255, 124, 0, .1);
+      --t1: #edf2ff;
+      --t2: #a0b4d8;
+      --t3: #5e7eaa;
+      --t4: #35507a;
+      --fd: 'Oxanium', sans-serif;
+      --fb: 'Poppins', sans-serif;
+      --fm: 'JetBrains Mono', monospace;
+      --r: 12px;
+      --glass: blur(25px) saturate(1.2);
+      --glow-cy: 0 0 20px rgba(0,230,255,.12);
+      --glow-gn: 0 0 20px rgba(0,255,157,.10);
+      --glow-am: 0 0 20px rgba(255,171,0,.10);
+      --glow-rd: 0 0 20px rgba(255,61,90,.10);
+      --glow-pu: 0 0 20px rgba(168,85,247,.12);
+    }
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      background: url('chrome_glass_bg.png') no-repeat center center fixed;
+      background-size: cover;
+      color: var(--t1);
+      font-family: var(--fb);
+      font-size: 13.5px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, .022) 2px, rgba(0, 0, 0, .022) 4px);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(0,230,255,.2), rgba(168,85,247,.15));
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(0,230,255,.35), rgba(168,85,247,.25));
+    }
+
+    .topbar {
+      height: 58px;
+      background: rgba(20, 20, 22, .75);
+      backdrop-filter: var(--glass);
+      -webkit-backdrop-filter: var(--glass);
+      border-bottom: 1px solid rgba(255, 255, 255, .05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 26px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 200;
+    }
+
+    .topbar::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 2%, var(--cy) 30%, var(--pu) 55%, var(--gn) 80%, transparent 98%);
+      opacity: .45;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .logo-hex {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--cy), var(--pu));
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      animation: hexP 3s ease-in-out infinite;
+    }
+
+    @keyframes hexP {
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 4px var(--cy))
+      }
+
+      50% {
+        filter: drop-shadow(0 0 14px var(--cy)) drop-shadow(0 0 28px var(--pu))
+      }
+    }
+
+    .logo-name {
+      font-family: var(--fd);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      color: var(--cy);
+      text-shadow: 0 0 10px rgba(0,230,255,0.2);
+    }
+
+    .logo-sub {
+      font-size: 8px;
+      color: var(--t2);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-top: 2px;
+      opacity: 0.85;
+    }
+
+    .tb-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .clock {
+      font-family: var(--fd);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--cy);
+      letter-spacing: .1em;
+      text-shadow: 0 0 12px rgba(0, 230, 255, .4);
+    }
+
+    .tbtn {
+      padding: 7px 16px;
+      font-family: var(--fm);
+      font-size: 10px;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 1px solid rgba(24,34,64,.5);
+      background: rgba(14,20,40,.5);
+      color: var(--t2);
+      border-radius: 8px;
+      transition: all .25s cubic-bezier(.4,0,.2,1);
+    }
+
+    .tbtn:hover {
+      border-color: var(--cy3);
+      color: var(--cy);
+      background: rgba(0,230,255,.08);
+      box-shadow: 0 0 16px rgba(0,230,255,.08);
+      transform: translateY(-1px);
+    }
+
+    .tbtn.p {
+      border-color: rgba(0,230,255,.3);
+      color: var(--cy);
+      background: linear-gradient(135deg, rgba(0,230,255,.12), rgba(168,85,247,.08));
+      box-shadow: 0 0 12px rgba(0,230,255,.06);
+    }
+
+    .tbtn.p:hover {
+      background: linear-gradient(135deg, rgba(0,230,255,.18), rgba(168,85,247,.12));
+      box-shadow: 0 0 22px rgba(0,230,255,.12);
+      transform: translateY(-1px);
+    }
+
+    .shell {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 240px;
+      background: rgba(20, 20, 22, .70);
+      backdrop-filter: var(--glass);
+      -webkit-backdrop-filter: var(--glass);
+      border-right: 1px solid rgba(255, 255, 255, .05);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      padding: 18px 0;
+      overflow-y: auto;
+    }
+
+    .sb-lbl {
+      padding: 10px 20px 4px;
+      font-family: var(--fm);
+      font-size: 9px;
+      letter-spacing: .22em;
+      color: var(--t3);
+      text-transform: uppercase;
+    }
+
+    .nv {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      cursor: pointer;
+      color: var(--t2);
+      font-size: 13px;
+      font-weight: 400;
+      transition: all .25s cubic-bezier(.4,0,.2,1);
+      border-left: 3px solid transparent;
+      user-select: none;
+      border-radius: 0 8px 8px 0;
+      margin-right: 10px;
+    }
+
+    .nv:hover {
+      color: var(--t1);
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .nv.on {
+      color: #ffffff;
+      border-left-color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+      font-weight: 600;
+      box-shadow: inset 3px 0 12px rgba(255, 255, 255, 0.04);
+    }
+
+    .nv-ic {
+      font-size: 14px;
+      width: 19px;
+      text-align: center;
+    }
+
+    .nv-badge {
+      margin-left: auto;
+      background: var(--rd);
+      color: #fff;
+      border-radius: 10px;
+      font-family: var(--fm);
+      font-size: 9px;
+      padding: 1px 6px;
+      font-weight: 700;
+    }
+
+    .nv-badge.g {
+      background: var(--gn);
+      color: #000;
+    }
+
+    .sb-sp {
+      flex: 1;
+    }
+
+    .sb-foot {
+      padding: 14px 20px;
+      border-top: 1px solid rgba(24,34,64,.35);
+      font-family: var(--fm);
+      font-size: 10px;
+      color: var(--t3);
+      line-height: 1.9;
+    }
+
+    .sb-foot .hi {
+      color: var(--gn);
+    }
+
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      background: transparent;
+    }
+
+    .page {
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .page.on {
+      display: flex;
+    }
+
+    .ph {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .ph-sub {
+      font-family: var(--fm);
+      font-size: 9px;
+      letter-spacing: .2em;
+      color: var(--t4);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .ph-h {
+      font-family: var(--fd);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    .ph-h span {
+      color: var(--cy);
+    }
+
+    .ph-acts {
+      display: flex;
+      gap: 7px;
+    }
+
+    .btn {
+      padding: 8px 18px;
+      font-family: var(--fm);
+      font-size: 10px;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 1px solid rgba(24,34,64,.5);
+      background: rgba(14,20,40,.4);
+      color: var(--t2);
+      border-radius: 8px;
+      transition: all .25s cubic-bezier(.4,0,.2,1);
+    }
+
+    .btn:hover {
+      border-color: var(--cy3);
+      color: var(--cy);
+      background: rgba(0,230,255,.08);
+      box-shadow: 0 0 14px rgba(0,230,255,.06);
+      transform: translateY(-1px);
+    }
+
+    .btn.p {
+      border-color: rgba(0,230,255,.3);
+      color: var(--cy);
+      background: linear-gradient(135deg, rgba(0,230,255,.1), rgba(168,85,247,.06));
+    }
+
+    .btn.p:hover {
+      background: linear-gradient(135deg, rgba(0,230,255,.16), rgba(168,85,247,.1));
+      box-shadow: 0 0 18px rgba(0,230,255,.1);
+    }
+
+    .mc-row {
+      display: grid;
+      gap: 14px;
+    }
+
+    .mc-row.c4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .mc-row.c5 {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .mc {
+      background: rgba(14, 20, 40, .45);
+      backdrop-filter: blur(12px) saturate(1.2);
+      -webkit-backdrop-filter: blur(12px) saturate(1.2);
+      border: 1px solid rgba(255, 255, 255, .05);
+      border-radius: var(--r);
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: all .3s cubic-bezier(.4,0,.2,1);
+      cursor: default;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, .04), 0 4px 16px rgba(0,0,0,.15);
+    }
+
+    .mc:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, .15);
+    }
+
+    .mc::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: var(--r) var(--r) 0 0;
+    }
+
+    .mc.cy::before {
+      background: linear-gradient(90deg, transparent, var(--cy), transparent);
+    }
+    .mc.cy:hover {
+      box-shadow: var(--glow-cy), inset 0 1px 0 rgba(0,230,255,.06);
+    }
+
+    .mc.gn::before {
+      background: linear-gradient(90deg, transparent, var(--gn), transparent);
+    }
+    .mc.gn:hover {
+      box-shadow: var(--glow-gn), inset 0 1px 0 rgba(0,255,157,.06);
+    }
+
+    .mc.am::before {
+      background: linear-gradient(90deg, transparent, var(--am), transparent);
+    }
+    .mc.am:hover {
+      box-shadow: var(--glow-am), inset 0 1px 0 rgba(255,171,0,.06);
+    }
+
+    .mc.rd::before {
+      background: linear-gradient(90deg, transparent, var(--rd), transparent);
+    }
+    .mc.rd:hover {
+      box-shadow: var(--glow-rd), inset 0 1px 0 rgba(255,61,90,.06);
+    }
+
+    .mc.pu::before {
+      background: linear-gradient(90deg, transparent, var(--pu), transparent);
+    }
+    .mc.pu:hover {
+      box-shadow: var(--glow-pu), inset 0 1px 0 rgba(168,85,247,.06);
+    }
+
+    .mc-ico {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 26px;
+      opacity: .07;
+    }
+
+    .mc-lbl {
+      font-family: var(--fm);
+      font-size: 9px;
+      letter-spacing: .18em;
+      color: var(--t2);
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+
+    .mc-val {
+      font-family: var(--fd);
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .mc.cy .mc-val {
+      color: var(--cy);
+      text-shadow: 0 0 16px rgba(0, 230, 255, .35), 0 0 40px rgba(0, 230, 255, .1);
+    }
+
+    .mc.gn .mc-val {
+      color: var(--gn);
+      text-shadow: 0 0 16px rgba(0, 255, 157, .3), 0 0 40px rgba(0, 255, 157, .08);
+    }
+
+    .mc.am .mc-val {
+      color: var(--am);
+      text-shadow: 0 0 16px rgba(255, 171, 0, .3), 0 0 40px rgba(255, 171, 0, .08);
+    }
+
+    .mc.rd .mc-val {
+      color: var(--rd);
+      text-shadow: 0 0 16px rgba(255, 61, 90, .3), 0 0 40px rgba(255, 61, 90, .08);
+    }
+
+    .mc.pu .mc-val {
+      color: var(--pu);
+      text-shadow: 0 0 16px rgba(168, 85, 247, .3), 0 0 40px rgba(168, 85, 247, .08);
+    }
+
+    .mc-d {
+      font-family: var(--fm);
+      font-size: 10px;
+      color: var(--t2);
+    }
+
+    .up {
+      color: var(--gn);
+    }
+
+    .dn {
+      color: var(--rd);
+    }
+
+    .wa {
+      color: var(--am);
+    }
+
+    .panel {
+      background: rgba(11, 16, 32, .5);
+      backdrop-filter: blur(14px) saturate(1.2);
+      -webkit-backdrop-filter: blur(14px) saturate(1.2);
+      border: 1px solid rgba(255, 255, 255, .06);
+      border-radius: var(--r);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, .05), 0 8px 32px 0 rgba(0, 0, 0, .25);
+    }
+
+    .phead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 18px;
+      border-bottom: 1px solid rgba(24,34,64,.35);
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .phead::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 18px;
+      right: 18px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,230,255,.12), rgba(168,85,247,.08), transparent);
+    }
+
+    .ptit {
+      font-family: var(--fd);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      color: var(--t2);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .pbody {
+      padding: 16px 18px;
+      flex: 1;
+    }
+
+    .pbody.np {
+      padding: 0;
+    }
+
+    .prow {
+      display: flex;
+      gap: 6px;
+    }
+
+    .ptag {
+      background: rgba(18,25,46,.6);
+      border: 1px solid rgba(24,34,64,.5);
+      color: var(--t3);
+      font-family: var(--fm);
+      font-size: 9px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      transition: all .25s cubic-bezier(.4,0,.2,1);
+    }
+
+    .ptag:hover,
+    .ptag.on {
+      border-color: rgba(0,230,255,.3);
+      color: var(--cy);
+      background: rgba(0,230,255,.1);
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .col {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .gauge-wrap {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      margin: 0 auto;
+    }
+
+    .gauge-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .gauge-val {
+      font-family: var(--fd);
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .gauge-lbl {
+      font-family: var(--fm);
+      font-size: 9px;
+      color: var(--t3);
+      letter-spacing: .1em;
+      margin-top: 2px;
+    }
+
+    .prog-row {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .prog-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .prog-name {
+      font-family: var(--fm);
+      font-size: 10px;
+      color: var(--t2);
+      letter-spacing: .06em;
+    }
+
+    .prog-num {
+      font-family: var(--fd);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .prog-track {
+      height: 5px;
+      background: var(--brd);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 1s cubic-bezier(.4,0,.2,1);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--fm);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      backdrop-filter: blur(6px);
+    }
+
+    .tg {
+      background: rgba(0, 255, 157, .1);
+      color: var(--gn);
+      border: 1px solid rgba(0, 255, 157, .25);
+    }
+
+    .ta {
+      background: rgba(255, 171, 0, .1);
+      color: var(--am);
+      border: 1px solid rgba(255, 171, 0, .2);
+    }
+
+    .tr {
+      background: rgba(255, 61, 90, .1);
+      color: var(--rd);
+      border: 1px solid rgba(255, 61, 90, .2);
+    }
+
+    .tc {
+      background: rgba(0, 230, 255, .09);
+      color: var(--cy);
+      border: 1px solid rgba(0, 230, 255, .2);
+    }
+
+    .drift-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .di {
+      background: rgba(18, 25, 46, .6);
+      border: 1px solid rgba(24,34,64,.4);
+      border-radius: 8px;
+      padding: 12px 14px;
+      transition: all .25s cubic-bezier(.4,0,.2,1);
+    }
+
+    .di:hover {
+      transform: translateY(-2px);
+      border-color: rgba(31,46,85,.5);
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    }
+
+    .di-feat {
+      font-family: var(--fm);
+      font-size: 9px;
+      color: var(--t3);
+      margin-bottom: 7px;
+      letter-spacing: .07em;
+    }
+
+    .di-track {
+      height: 5px;
+      background: var(--brd);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .di-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .df-lo {
+      background: var(--gn);
+    }
+
+    .df-me {
+      background: var(--am);
+    }
+
+    .df-hi {
+      background: var(--rd);
+      animation: dP .9s infinite;
+    }
+
+    @keyframes dP {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    .di-bot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .di-val {
+      font-family: var(--fd);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dv-lo {
+      color: var(--gn);
+    }
+
+    .dv-me {
+      color: var(--am);
+    }
+
+    .dv-hi {
+      color: var(--rd);
+    }
+
+    .di-lbl {
+      font-family: var(--fm);
+      font-size: 8px;
+      color: var(--t3);
+    }
+
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .tbl th {
+      text-align: left;
+      font-family: var(--fm);
+      font-size: 9px;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+      color: var(--t3);
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(24,34,64,.35);
+      background: rgba(11,16,32,.5);
+      font-weight: 500;
+    }
+
+    .tbl td {
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(24, 34, 64, .3);
+      font-size: 12px;
+      color: var(--t2);
+      vertical-align: middle;
+    }
+
+    .tbl tbody tr {
+      transition: all .2s ease;
+    }
+
+    .tbl tbody tr:hover td {
+      background: rgba(0, 230, 255, .025);
+    }
+
+    .tbl .active-row td {
+      background: rgba(0, 230, 255, .04);
+    }
+
+    .mid {
+      font-family: var(--fd);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--t1);
+    }
+
+    .vtag {
+      display: inline-block;
+      background: var(--cy2);
+      border: 1px solid rgba(0, 230, 255, .2);
+      color: var(--cy);
+      font-family: var(--fm);
+      padding: 1px 7px;
+      font-size: 9px;
+      border-radius: 3px;
+    }
+
+    .ab {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .at {
+      width: 58px;
+      height: 4px;
+      background: var(--brd);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .af {
+      height: 100%;
+      border-radius: 2px;
+    }
+
+    .af.hi {
+      background: var(--gn);
+    }
+
+    .af.me {
+      background: var(--am);
+    }
+
+    .af.lo {
+      background: var(--rd);
+    }
+
+    .mbs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .mb {
+      background: transparent;
+      border: 1px solid var(--brd);
+      color: var(--t3);
+      font-family: var(--fm);
+      font-size: 9px;
+      padding: 2px 8px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all .15s;
+    }
+
+    .mb:hover {
+      border-color: var(--cy3);
+      color: var(--cy);
+    }
+
+    .al-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .al {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px solid rgba(24,34,64,.35);
+      border-radius: 8px;
+      background: rgba(18,25,46,.5);
+      position: relative;
+      overflow: hidden;
+      transition: all .2s ease;
+    }
+
+    .al:hover {
+      transform: translateX(2px);
+    }
+
+    .al::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+    }
+
+    .al.cr::before {
+      background: var(--rd);
+    }
+
+    .al.wa::before {
+      background: var(--am);
+    }
+
+    .al.in::before {
+      background: var(--cy);
+    }
+
+    .al.ok::before {
+      background: var(--gn);
+    }
+
+    .al.cr {
+      border-color: rgba(255, 61, 90, .18);
+    }
+
+    .al.wa {
+      border-color: rgba(255, 171, 0, .14);
+    }
+
+    .al.in {
+      border-color: rgba(0, 230, 255, .12);
+    }
+
+    .al.ok {
+      border-color: rgba(0, 255, 157, .12);
+    }
+
+    .al-ic {
+      font-size: 13px;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .al-b {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .al-t {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--t1);
+      margin-bottom: 1px;
+    }
+
+    .al-d {
+      font-size: 10px;
+      color: var(--t3);
+    }
+
+    .al-tm {
+      font-family: var(--fm);
+      font-size: 9px;
+      color: var(--t3);
+      margin-top: 1px;
+    }
+
+    .al-sv {
+      font-family: var(--fm);
+      font-size: 8px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 2px;
+      letter-spacing: .09em;
+      align-self: flex-start;
+      white-space: nowrap;
+    }
+
+    .sv-c {
+      background: rgba(255, 61, 90, .18);
+      color: var(--rd);
+    }
+
+    .sv-w {
+      background: rgba(255, 171, 0, .15);
+      color: var(--am);
+    }
+
+    .sv-i {
+      background: rgba(0, 100, 130, .3);
+      color: var(--cy);
+    }
+
+    .sv-o {
+      background: rgba(0, 255, 157, .1);
+      color: var(--gn);
+    }
+
+    .bias-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .bias-item {
+      background: rgba(18, 25, 46, .55);
+      border: 1px solid rgba(24,34,64,.4);
+      border-radius: 10px;
+      padding: 14px;
+      transition: all .25s cubic-bezier(.4,0,.2,1);
+    }
+
+    .bias-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    }
+
+    .bias-cat {
+      font-family: var(--fm);
+      font-size: 9px;
+      color: var(--cy);
+      letter-spacing: .1em;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .bias-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .bb-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bb-label {
+      font-size: 10px;
+      color: var(--t2);
+      width: 58px;
+      flex-shrink: 0;
+    }
+
+    .bb-track {
+      flex: 1;
+      height: 6px;
+      background: var(--brd);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .bb-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .bb-val {
+      font-family: var(--fm);
+      font-size: 10px;
+      width: 36px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .shap-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .shap-feat {
+      font-family: var(--fm);
+      font-size: 10px;
+      color: var(--t2);
+      width: 120px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .shap-center {
+      flex: 1;
+      position: relative;
+      height: 18px;
+    }
+
+    .shap-zero {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--brd2);
+    }
+
+    .shap-bar-pos {
+      position: absolute;
+      left: 50%;
+      top: 3px;
+      height: 12px;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .shap-bar-neg {
+      position: absolute;
+      top: 3px;
+      height: 12px;
+      border-radius: 3px 0 0 3px;
+    }
+
+    .shap-val {
+      font-family: var(--fm);
+      font-size: 9px;
+      color: var(--t3);
+      width: 42px;
+      flex-shrink: 0;
+    }
+
+    .cm-cell {
+      padding: 16px 10px;
+      text-align: center;
+      border-radius: 10px;
+      font-family: var(--fd);
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s ease;
+    }
+
+    .cm-cell:hover {
+      transform: scale(1.03);
+    }
+
+    .cm-cell .cm-sub {
+      font-family: var(--fm);
+      font-size: 9px;
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    .cm-tp {
+      background: rgba(0, 255, 157, .12);
+      color: var(--gn);
+      border: 1px solid rgba(0, 255, 157, .2);
+    }
+
+    .cm-tn {
+      background: rgba(0, 255, 157, .12);
+      color: var(--gn);
+      border: 1px solid rgba(0, 255, 157, .2);
+    }
+
+    .cm-fp {
+      background: rgba(255, 171, 0, .1);
+      color: var(--am);
+      border: 1px solid rgba(255, 171, 0, .2);
+    }
+
+    .cm-fn {
+      background: rgba(255, 61, 90, .1);
+      color: var(--rd);
+      border: 1px solid rgba(255, 61, 90, .2);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .fg {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .fg label {
+      font-family: var(--fm);
+      font-size: 9px;
+      color: var(--t3);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .fg input,
+    .fg select {
+      background: rgba(18,25,46,.6);
+      border: 1px solid rgba(24,34,64,.45);
+      color: var(--t1);
+      font-family: var(--fm);
+      font-size: 11px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      outline: none;
+      transition: all .25s cubic-bezier(.4,0,.2,1);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .fg input:focus,
+    .fg select:focus {
+      border-color: rgba(0,230,255,.4);
+      box-shadow: 0 0 12px rgba(0,230,255,.08), inset 0 0 6px rgba(0,230,255,.03);
+    }
+
+    .fg select option {
+      background: #0e1428;
+    }
+
+    .pred-result {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: var(--r);
+      border: 1px solid rgba(24,34,64,.35);
+      background: rgba(14,20,40,.5);
+      backdrop-filter: blur(12px);
+      display: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,.12);
+    }
+
+    .pred-result.show {
+      display: block;
+      animation: su .35s ease both;
+    }
+
+    .pred-res-val {
+      font-family: var(--fd);
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .cmp-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cmp-table th {
+      text-align: left;
+      font-family: var(--fm);
+      font-size: 9px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--t3);
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(24,34,64,.35);
+      background: rgba(11,16,32,.5);
+    }
+
+    .cmp-table th:not(:first-child) {
+      text-align: center;
+    }
+
+    .cmp-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(24, 34, 64, .5);
+      font-size: 12px;
+      color: var(--t2);
+      vertical-align: middle;
+    }
+
+    .cmp-table td:not(:first-child) {
+      text-align: center;
+    }
+
+    .cmp-table tbody tr:hover td {
+      background: rgba(255, 255, 255, .018);
+    }
+
+    .cmp-feat {
+      font-family: var(--fm);
+      font-size: 11px;
+      color: var(--t2);
+    }
+
+    .cmp-best {
+      font-family: var(--fd);
+      font-weight: 700;
+      color: var(--gn);
+    }
+
+    .cmp-mid {
+      font-family: var(--fd);
+      font-weight: 600;
+      color: var(--am);
+    }
+
+    .cmp-low {
+      font-family: var(--fd);
+      font-weight: 600;
+      color: var(--rd);
+    }
+
+    .fp-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .fp-day {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .fp-dlbl {
+      font-family: var(--fm);
+      font-size: 10px;
+      color: var(--t2);
+      width: 36px;
+      flex-shrink: 0;
+    }
+
+    .fp-track {
+      flex: 1;
+      height: 8px;
+      background: var(--brd);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .fp-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .fp-prob {
+      font-family: var(--fd);
+      font-size: 11px;
+      font-weight: 700;
+      width: 42px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .ani {
+      animation: su .5s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    .ani1 {
+      animation: su .5s .08s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    .ani2 {
+      animation: su .5s .16s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    .ani3 {
+      animation: su .5s .24s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    .ani4 {
+      animation: su .5s .32s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    @keyframes su {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(.98)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .sdiv {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 4px 0;
+    }
+
+    .sdiv-line {
+      flex: 1;
+      height: 1px;
+      background: var(--brd);
+    }
+
+    .sdiv-txt {
+      font-family: var(--fm);
+      font-size: 9px;
+      color: var(--t4);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      animation: blnk 1.4s infinite;
+    }
+
+    .dot-g {
+      background: var(--gn);
+      box-shadow: 0 0 6px var(--gn);
+    }
+
+    .dot-a {
+      background: var(--am);
+      box-shadow: 0 0 6px var(--am);
+      animation-duration: 1s;
+    }
+
+    .dot-r {
+      background: var(--rd);
+      box-shadow: 0 0 6px var(--rd);
+      animation-duration: .65s;
+    }
+
+    @keyframes blnk {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .18
+      }
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(31,46,85,.5);
+      border-radius: var(--r);
+      padding: 32px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .3s cubic-bezier(.4,0,.2,1);
+      background: rgba(18,25,46,.4);
+      position: relative;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.drag {
+      border-color: var(--cy);
+      background: rgba(0,230,255,.06);
+      box-shadow: 0 0 24px rgba(0,230,255,.06);
+    }
+
+    .upload-zone input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-prog {
+      margin-top: 12px;
+      display: none;
+    }
+
+    .upload-prog.show {
+      display: block;
+    }
+
+    .upload-prog-bar {
+      height: 6px;
+      background: var(--brd);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .upload-prog-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--cy), var(--gn));
+      transition: width .4s ease;
+      width: 0%;
+    }
+
+    .upload-result {
+      margin-top: 12px;
+      display: none;
+      padding: 14px;
+      border: 1px solid var(--brd);
+      border-radius: var(--r);
+      background: var(--bg4);
+    }
+
+    .upload-result.show {
+      display: block;
+    }
+
+    .upload-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .upload-stat {
+      text-align: center;
+      padding: 10px;
+      background: rgba(11,16,32,.5);
+      border: 1px solid rgba(24,34,64,.35);
+      border-radius: 8px;
+    }
+
+    .upload-stat-val {
+      font-family: var(--fd);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .upload-stat-lbl {
+      font-family: var(--fm);
+      font-size: 8px;
+      color: var(--t3);
+      letter-spacing: .1em;
+      margin-top: 2px;
+    }
+
+    /* Settings Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(4,6,14,0.7);
+      backdrop-filter: blur(16px) saturate(1.2);
+      -webkit-backdrop-filter: blur(16px) saturate(1.2);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s cubic-bezier(.16,1,.3,1);
+    }
+    .modal-content {
+      background: rgba(11,16,32,.92);
+      border: 1px solid rgba(24,34,64,.5);
+      box-shadow: 0 16px 48px rgba(0,0,0,.4), 0 0 30px rgba(0,230,255,.04);
+      border-radius: 16px;
+      width: 440px;
+      max-width: 90%;
+      overflow: hidden;
+      animation: slideUp 0.3s cubic-bezier(.16,1,.3,1);
+    }
+    .modal-header {
+      padding: 20px 26px;
+      border-bottom: 1px solid rgba(24,34,64,.35);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .modal-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 26px;
+      right: 26px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,230,255,.15), rgba(168,85,247,.1), transparent);
+    }
+    .modal-title {
+      font-family: var(--fd);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--t1);
+      margin: 0;
+      letter-spacing: 0.05em;
+    }
+    .modal-close {
+      background: rgba(18,25,46,.5);
+      border: 1px solid rgba(24,34,64,.4);
+      color: var(--t3);
+      font-size: 18px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all .2s;
+    }
+    .modal-close:hover {
+      color: var(--rd);
+      border-color: rgba(255,61,90,.2);
+      background: rgba(255,61,90,.08);
+    }
+    .modal-body {
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .modal-footer {
+      padding: 18px 26px;
+      border-top: 1px solid rgba(24,34,64,.3);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: rgba(14,20,40,.4);
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-family: var(--fm);
+      font-size: 10px;
+      color: var(--t3);
+      letter-spacing: 0.05em;
+    }
+    .form-input {
+      background: rgba(18,25,46,.6);
+      border: 1px solid rgba(24,34,64,.45);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--t1);
+      font-family: var(--fm);
+      font-size: 11px;
+      outline: none;
+      transition: all .25s cubic-bezier(.4,0,.2,1);
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .form-input:focus {
+      border-color: rgba(0,230,255,.4);
+      box-shadow: 0 0 12px rgba(0,230,255,.08);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(24px) scale(.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-hex">⬡</div>
+      <div>
+        <div class="logo-name">MONETRA</div>
+        <div class="logo-sub">Autonomous ML Monitoring &amp; Failure Prediction System</div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <span id="conn-status" style="font-family:var(--fm);font-size:9px;letter-spacing:.1em;color:var(--t3)">●
+        CONNECTING…</span>
+      <div class="clock" id="clock">00:00:00</div>
+      <button class="tbtn" onclick="openSettingsModal()">⚙ Settings</button>
+      <button class="tbtn p" onclick="openDeployModal()">⊕ Deploy</button>
+    </div>
+  </header>
+
+  <div class="shell">
+
+    <aside class="sidebar">
+      <div class="sb-lbl">Main Menu</div>
+      <div class="nv on" data-page="overview" onclick="nav(this)"><span class="nv-ic">⊞</span>Overview</div>
+      <div class="nv" data-page="monitoring" onclick="nav(this)"><span class="nv-ic">◉</span>Monitoring</div>
+      <div class="nv" data-page="drift" onclick="nav(this)"><span class="nv-ic">⌇</span>Data Drift</div>
+      <div class="nv" data-page="predictions" onclick="nav(this)"><span class="nv-ic">▸</span>Predictions<span
+          class="nv-badge g">LIVE</span></div>
+      <div class="nv" data-page="comparison" onclick="nav(this)"><span class="nv-ic">⇌</span>Model Comparison</div>
+      <div class="nv" data-page="registry" onclick="nav(this)"><span class="nv-ic">◈</span>Model Registry</div>
+      <div class="sb-lbl">AI</div>
+      <div class="nv" data-page="insights" onclick="nav(this)"><span class="nv-ic">◇</span>AI Insights<span
+          class="nv-badge" style="background:var(--pu)">GPT</span></div>
+      <div class="sb-sp"></div>
+      <div class="sb-foot">Ver <span class="hi">4.2.1</span> · Status <span class="hi">HEALTHY</span><br>Last sync:
+        <span class="hi" id="synctime">2s ago</span><br>Models active: <span class="hi">2</span> · Uptime <span
+          class="hi">99.97%</span></div>
+    </aside>
+
+    <main class="main">
+
+      <!-- OVERVIEW -->
+      <div class="page on" id="page-overview">
+        <div class="ph ani">
+          <div>
+            <div class="ph-sub">Dashboard · Overview</div>
+            <div class="ph-h">System <span>Overview</span></div>
+          </div>
+          <div class="ph-acts"><button class="btn" style="border-color:var(--rd);color:var(--rd);" onclick="resetDemoDB(this)">⚠ Reset Demo DB</button><button class="btn" onclick="doRefresh(this)">↺ Refresh</button><button class="btn p" onclick="dlCSV()">⬇ Export</button></div>
+        </div>
+        <div class="mc-row c4 ani1">
+          <div class="mc cy">
+            <div class="mc-ico">◈</div>
+            <div class="mc-lbl">System Accuracy</div>
+            <div class="mc-val" id="ov-sys-accuracy">92.4<span style="font-size:13px">%</span></div>
+            <div class="mc-d"><span class="up" id="ov-vs-last">↑ 1.2%</span> vs last version</div>
+          </div>
+          <div class="mc gn">
+            <div class="mc-ico">◎</div>
+            <div class="mc-lbl">Active Model</div>
+            <div class="mc-val" id="ov-active-badge" style="font-size:15px;padding-top:5px">XGBoost</div>
+            <div class="mc-d"><span class="up">● LIVE</span> · <span id="ov-uptime">—</span> uptime</div>
+          </div>
+          <div class="mc am">
+            <div class="mc-ico">⌇</div>
+            <div class="mc-lbl">Drift Alerts</div>
+            <div class="mc-val" id="ov-drift-alerts">3</div>
+            <div class="mc-d"><span class="dn">↑ 1 new</span> today</div>
+          </div>
+          <div class="mc rd">
+            <div class="mc-ico">▸</div>
+            <div class="mc-lbl">Total Predictions</div>
+            <div class="mc-val" id="ov-pred">12.5k</div>
+            <div class="mc-d"><span class="up">↑ 8.3%</span> throughput</div>
+          </div>
+        </div>
+        <div class="row ani2">
+          <div class="panel" style="flex:0 0 310px">
+            <div class="phead">
+              <div class="ptit"><span class="dot dot-g"></span>Active Model</div>
+              <div class="prow"><button class="ptag on">Info</button><button class="ptag">Logs</button></div>
+            </div>
+            <div class="pbody">
+              <div style="display:flex;gap:16px;align-items:flex-start">
+                <div
+                  style="width:64px;height:64px;flex-shrink:0;background:linear-gradient(135deg,rgba(0,230,255,.12),rgba(168,85,247,.12));border:1px solid rgba(0,230,255,.28);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;">
+                  ⬡<span
+                    style="position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);font-family:var(--fm);font-size:7px;font-weight:700;background:var(--gn);color:#000;padding:1px 5px;border-radius:2px;letter-spacing:.1em;">LIVE</span>
+                </div>
+                <div style="flex:1">
+                  <div id="ov-active-model-name"
+                    style="font-family:var(--fd);font-size:16px;font-weight:700;margin-bottom:3px">XGBoost Classifier
+                  </div>
+                  <div id="ov-active-model-desc"
+                    style="font-family:var(--fm);font-size:9px;color:var(--cy);letter-spacing:.1em;margin-bottom:10px">
+                    GRADIENT BOOSTING · BINARY CLASSIFICATION · v3.0.2</div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 14px">
+                    <div style="display:flex;justify-content:space-between;font-size:11px"><span
+                        style="color:var(--t3)">Accuracy</span><span id="ov-card-acc"
+                        style="color:var(--gn);font-weight:600">92.4%</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px"><span
+                        style="color:var(--t3)">F1-Score</span><span id="ov-card-f1"
+                        style="color:var(--gn);font-weight:600">0.911</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px"><span
+                        style="color:var(--t3)">Latency</span><span id="ov-card-lat"
+                        style="color:var(--am);font-weight:600">42ms</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px"><span
+                        style="color:var(--t3)">Uptime</span><span id="ov-card-uptime"
+                        style="color:var(--gn);font-weight:600">—</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px"><span
+                        style="color:var(--t3)">Error Rate</span><span id="ov-card-err" style="color:var(--t1)">—</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px"><span
+                        style="color:var(--t3)">Health</span><span id="ov-card-health"
+                        style="color:var(--gn);font-weight:600">—/100</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit"><span class="dot dot-a"></span>Data Drift Overview</div>
+              <div class="prow"><button class="ptag on">PSI</button><button class="ptag">KS</button></div>
+            </div>
+            <div class="pbody">
+              <div class="drift-grid">
+                <div class="di">
+                  <div class="di-feat">loan_amount</div>
+                  <div class="di-track">
+                    <div class="di-fill df-hi" style="width:78%"></div>
+                  </div>
+                  <div class="di-bot"><span class="di-val dv-hi">0.78</span><span class="di-lbl">HIGH</span></div>
+                </div>
+                <div class="di">
+                  <div class="di-feat">credit_score</div>
+                  <div class="di-track">
+                    <div class="di-fill df-lo" style="width:14%"></div>
+                  </div>
+                  <div class="di-bot"><span class="di-val dv-lo">0.14</span><span class="di-lbl">STABLE</span></div>
+                </div>
+                <div class="di">
+                  <div class="di-feat">device_type</div>
+                  <div class="di-track">
+                    <div class="di-fill df-me" style="width:44%"></div>
+                  </div>
+                  <div class="di-bot"><span class="di-val dv-me">0.44</span><span class="di-lbl">MODERATE</span></div>
+                </div>
+                <div class="di">
+                  <div class="di-feat">income_band</div>
+                  <div class="di-track">
+                    <div class="di-fill df-hi" style="width:65%"></div>
+                  </div>
+                  <div class="di-bot"><span class="di-val dv-hi">0.65</span><span class="di-lbl">HIGH</span></div>
+                </div>
+                <div class="di">
+                  <div class="di-feat">applicant_age</div>
+                  <div class="di-track">
+                    <div class="di-fill df-lo" style="width:9%"></div>
+                  </div>
+                  <div class="di-bot"><span class="di-val dv-lo">0.09</span><span class="di-lbl">STABLE</span></div>
+                </div>
+                <div class="di">
+                  <div class="di-feat">employment</div>
+                  <div class="di-track">
+                    <div class="di-fill df-me" style="width:36%"></div>
+                  </div>
+                  <div class="di-bot"><span class="di-val dv-me">0.36</span><span class="di-lbl">MODERATE</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row ani3">
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit">▲ Performance Trend</div>
+              <div class="prow"><button class="ptag on" onclick="switchAcc(this,'7d')">7D</button><button class="ptag"
+                  onclick="switchAcc(this,'30d')">30D</button><button class="ptag"
+                  onclick="switchAcc(this,'90d')">90D</button></div>
+            </div>
+            <div class="pbody" style="padding:12px 14px"><canvas id="ov-acc-chart" height="148"></canvas></div>
+          </div>
+          <div class="panel" style="flex:0 0 290px">
+            <div class="phead">
+              <div class="ptit">⌇ Drift History</div>
+            </div>
+            <div class="pbody" style="padding:12px 14px"><canvas id="ov-drift-chart" height="148"></canvas></div>
+          </div>
+        </div>
+        <div class="row ani4">
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit">◈ Model Registry</div>
+              <div class="prow"><button class="ptag p" style="color:var(--cy);border-color:var(--cy3)"
+                  onclick="nav(document.querySelector('[data-page=registry]'))">View Full Registry</button></div>
+            </div>
+            <div class="pbody np">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th>Version</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Accuracy</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-reg-tbody">
+                  <tr>
+                    <td colspan="6"
+                      style="text-align:center;color:var(--t3);font-family:var(--fm);font-size:11px;padding:16px">
+                      Loading…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel" style="flex:0 0 290px">
+            <div class="phead">
+              <div class="ptit"><span class="dot dot-r"></span>Alerts</div><button class="ptag">Mark Read</button>
+            </div>
+            <div class="pbody">
+              <div class="al-list">
+                <div class="al cr">
+                  <div class="al-ic">●</div>
+                  <div class="al-b">
+                    <div class="al-t">High Drift — loan_amount</div>
+                    <div class="al-d">PSI 0.78 exceeds threshold.</div>
+                    <div class="al-tm">5 min ago · Loan_v3</div>
+                  </div><span class="al-sv sv-c">CRIT</span>
+                </div>
+                <div class="al wa">
+                  <div class="al-ic">●</div>
+                  <div class="al-b">
+                    <div class="al-t">Latency Spike 38ms→92ms</div>
+                    <div class="al-d">P99 latency exceeded SLA on cluster-2.</div>
+                    <div class="al-tm">21 min ago</div>
+                  </div><span class="al-sv sv-w">WARN</span>
+                </div>
+                <div class="al wa">
+                  <div class="al-ic">●</div>
+                  <div class="al-b">
+                    <div class="al-t">Recall Drop — Class 1</div>
+                    <div class="al-d">Recall fell 2.9% below 7-day rolling avg.</div>
+                    <div class="al-tm">1h ago</div>
+                  </div><span class="al-sv sv-w">WARN</span>
+                </div>
+                <div class="al in">
+                  <div class="al-ic">●</div>
+                  <div class="al-b">
+                    <div class="al-t">Shadow Eval Complete</div>
+                    <div class="al-d">Loan_v2 scored 90.0% in A/B window.</div>
+                    <div class="al-tm">2h ago</div>
+                  </div><span class="al-sv sv-i">INFO</span>
+                </div>
+                <div class="al ok">
+                  <div class="al-ic">●</div>
+                  <div class="al-b">
+                    <div class="al-t">No Active System Failures</div>
+                    <div class="al-d">Core infrastructure operating normally.</div>
+                    <div class="al-tm">Now</div>
+                  </div><span class="al-sv sv-o">OK</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MONITORING -->
+      <div class="page" id="page-monitoring">
+        <div class="ph ani">
+          <div>
+            <div class="ph-sub">Module · Health Monitoring</div>
+            <div class="ph-h">Model <span>Health Monitor</span></div>
+          </div>
+          <div class="ph-acts"><button class="btn" onclick="doRefresh(this)">↺ Live Refresh</button><button
+              class="btn p" onclick="dlCSV()">⬇ Health Report</button></div>
+        </div>
+        <div class="row ani1">
+          <div class="panel" style="flex:0 0 220px">
+            <div class="phead">
+              <div class="ptit">⬡ Model Health Score</div>
+            </div>
+            <div class="pbody" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+              <div class="gauge-wrap"><canvas id="health-gauge" width="140" height="140"></canvas>
+                <div class="gauge-center">
+                  <div class="gauge-val" id="mon-health-val" style="color:var(--gn)">87</div>
+                  <div class="gauge-lbl">/ 100</div>
+                </div>
+              </div>
+              <span class="tag tg" id="mon-health-tag" style="font-size:10px">HEALTHY</span>
+              <div style="font-family:var(--fm);font-size:9px;color:var(--t3);text-align:center;line-height:1.7">
+                Accuracy: <span id="mon-health-acc" style="color:var(--gn)">92.4%</span><br>Threshold: <span
+                  style="color:var(--am)">85.0%</span><br>Status: <span id="mon-acc-status"
+                  style="color:var(--gn)">ABOVE</span></div>
+            </div>
+          </div>
+          <div class="col" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;align-content:start">
+            <div class="mc cy">
+              <div class="mc-ico">◈</div>
+              <div class="mc-lbl">Accuracy</div>
+              <div class="mc-val" id="mon-accuracy">92.4<span style="font-size:13px">%</span></div>
+              <div class="mc-d"><span class="up">↑ 1.2%</span> vs baseline</div>
+            </div>
+            <div class="mc gn">
+              <div class="mc-ico">⊞</div>
+              <div class="mc-lbl">Precision</div>
+              <div class="mc-val" id="mon-precision">91.8<span style="font-size:13px">%</span></div>
+              <div class="mc-d"><span class="up">↑ 0.8%</span> rolling 24h</div>
+            </div>
+            <div class="mc am">
+              <div class="mc-ico">◉</div>
+              <div class="mc-lbl">Recall</div>
+              <div class="mc-val" id="mon-recall">90.5<span style="font-size:13px">%</span></div>
+              <div class="mc-d"><span class="dn">↓ 0.4%</span> from yesterday</div>
+            </div>
+            <div class="mc pu">
+              <div class="mc-ico">⌇</div>
+              <div class="mc-lbl">F1-Score</div>
+              <div class="mc-val" id="mon-f1">0.911</div>
+              <div class="mc-d"><span class="up">↑ stable</span> trend</div>
+            </div>
+          </div>
+          <div class="panel" style="flex:0 0 240px">
+            <div class="phead">
+              <div class="ptit"><span class="dot dot-r"></span>Failure Probability</div>
+            </div>
+            <div class="pbody" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+              <div class="gauge-wrap"><canvas id="fail-gauge" width="140" height="140"></canvas>
+                <div class="gauge-center">
+                  <div class="gauge-val" id="mon-fail-pct" style="color:var(--am);font-size:22px">23%</div>
+                  <div class="gauge-lbl">NEXT 7 DAYS</div>
+                </div>
+              </div>
+              <span class="tag ta" id="mon-risk-tag">⚠ MODERATE RISK</span>
+              <div style="font-family:var(--fm);font-size:9px;color:var(--t3);text-align:center;line-height:1.7">Root
+                cause: <span style="color:var(--am)">Drift</span><br>Secondary: <span
+                  style="color:var(--am)">Latency</span><br>Confidence: <span style="color:var(--cy)">78%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="mc-row c4 ani2">
+          <div class="mc rd">
+            <div class="mc-ico">💻</div>
+            <div class="mc-lbl">Error Rate</div>
+            <div class="mc-val" id="mon-errrate">0.8<span style="font-size:13px">%</span></div>
+            <div class="mc-d"><span class="dn">↑ 0.1%</span> last hour</div>
+          </div>
+          <div class="mc am">
+            <div class="mc-ico">⏱</div>
+            <div class="mc-lbl">Latency (P99)</div>
+            <div class="mc-val" id="mon-latency">42<span style="font-size:13px">ms</span></div>
+            <div class="mc-d"><span class="wa">≈ within SLA</span></div>
+          </div>
+          <div class="mc cy">
+            <div class="mc-ico">▲</div>
+            <div class="mc-lbl">Throughput</div>
+            <div class="mc-val" id="mon-throughput">1.2k<span style="font-size:13px">/s</span></div>
+            <div class="mc-d"><span class="up">↑ peak load</span></div>
+          </div>
+          <div class="mc pu">
+            <div class="mc-ico">◎</div>
+            <div class="mc-lbl">Confidence Score</div>
+            <div class="mc-val" id="mon-conf">0.847</div>
+            <div class="mc-d"><span class="up">avg prediction conf.</span></div>
+          </div>
+        </div>
+        <div class="row ani3">
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit">⚖ Bias Monitoring (Fairness)</div>
+              <div class="prow"><button class="ptag on">Approval Rate</button><button class="ptag">Error Rate</button>
+              </div>
+            </div>
+            <div class="pbody">
+              <div class="bias-grid">
+                <div class="bias-item">
+                  <div class="bias-cat">By Gender</div>
+                  <div class="bias-bars">
+                    <div class="bb-row"><span class="bb-label">Male</span>
+                      <div class="bb-track">
+                        <div class="bb-fill" style="width:74%;background:var(--cy)"></div>
+                      </div><span class="bb-val" style="color:var(--cy)">74%</span>
+                    </div>
+                    <div class="bb-row"><span class="bb-label">Female</span>
+                      <div class="bb-track">
+                        <div class="bb-fill" style="width:68%;background:var(--am)"></div>
+                      </div><span class="bb-val" style="color:var(--am)">68%</span>
+                    </div>
+                    <div class="bb-row"><span class="bb-label">Other</span>
+                      <div class="bb-track">
+                        <div class="bb-fill" style="width:71%;background:var(--pu)"></div>
+                      </div><span class="bb-val" style="color:var(--pu)">71%</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="bias-item">
+                  <div class="bias-cat">By Region</div>
+                  <div class="bias-bars">
+                    <div class="bb-row"><span class="bb-label">North</span>
+                      <div class="bb-track">
+                        <div class="bb-fill" style="width:78%;background:var(--gn)"></div>
+                      </div><span class="bb-val" style="color:var(--gn)">78%</span>
+                    </div>
+                    <div class="bb-row"><span class="bb-label">South</span>
+                      <div class="bb-track">
+                        <div class="bb-fill" style="width:65%;background:var(--am)"></div>
+                      </div><span class="bb-val" style="color:var(--am)">65%</span>
+                    </div>
+                    <div class="bb-row"><span class="bb-label">East</span>
+                      <div class="bb-track">
+                        <div class="bb-fill" style="width:70%;background:var(--cy)"></div>
+                      </div><span class="bb-val" style="color:var(--cy)">70%</span>
+                    </div>
+                    <div class="bb-row"><span class="bb-label">West</span>
+                      <div class="bb-track">
+                        <div class="bb-fill" style="width:73%;background:var(--cy)"></div>
+                      </div><span class="bb-val" style="color:var(--cy)">73%</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="bias-item">
+                  <div class="bias-cat">By Income Band</div>
+                  <div class="bias-bars">
+                    <div class="bb-row"><span class="bb-label">High</span>
+                      <div class="bb-track">
+                        <div class="bb-fill" style="width:89%;background:var(--gn)"></div>
+                      </div><span class="bb-val" style="color:var(--gn)">89%</span>
+                    </div>
+                    <div class="bb-row"><span class="bb-label">Medium</span>
+                      <div class="bb-track">
+                        <div class="bb-fill" style="width:72%;background:var(--cy)"></div>
+                      </div><span class="bb-val" style="color:var(--cy)">72%</span>
+                    </div>
+                    <div class="bb-row"><span class="bb-label">Low</span>
+                      <div class="bb-track">
+                        <div class="bb-fill" style="width:54%;background:var(--rd)"></div>
+                      </div><span class="bb-val" style="color:var(--rd)">54%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                style="margin-top:10px;padding:8px 10px;background:rgba(255,171,0,.07);border:1px solid rgba(255,171,0,.15);border-radius:4px;font-family:var(--fm);font-size:10px;color:var(--am)">
+                ⚠ Fairness Alert: 35% gap between High/Low income approval rate. Bias threshold exceeded.</div>
+            </div>
+          </div>
+          <div class="panel" style="flex:0 0 260px">
+            <div class="phead">
+              <div class="ptit">🔮 Failure Prediction</div>
+            </div>
+            <div class="pbody">
+              <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-bottom:10px;letter-spacing:.06em">
+                PROBABILITY OF FAILURE — NEXT 7 DAYS</div>
+              <div class="fp-timeline">
+                <div class="fp-day"><span class="fp-dlbl">Day 1</span>
+                  <div class="fp-track">
+                    <div class="fp-fill" style="width:8%;background:var(--gn)"></div>
+                  </div><span class="fp-prob" style="color:var(--gn)">8%</span>
+                </div>
+                <div class="fp-day"><span class="fp-dlbl">Day 2</span>
+                  <div class="fp-track">
+                    <div class="fp-fill" style="width:11%;background:var(--gn)"></div>
+                  </div><span class="fp-prob" style="color:var(--gn)">11%</span>
+                </div>
+                <div class="fp-day"><span class="fp-dlbl">Day 3</span>
+                  <div class="fp-track">
+                    <div class="fp-fill" style="width:16%;background:var(--gn)"></div>
+                  </div><span class="fp-prob" style="color:var(--gn)">16%</span>
+                </div>
+                <div class="fp-day"><span class="fp-dlbl">Day 4</span>
+                  <div class="fp-track">
+                    <div class="fp-fill" style="width:23%;background:var(--am)"></div>
+                  </div><span class="fp-prob" style="color:var(--am)">23%</span>
+                </div>
+                <div class="fp-day"><span class="fp-dlbl">Day 5</span>
+                  <div class="fp-track">
+                    <div class="fp-fill" style="width:31%;background:var(--am)"></div>
+                  </div><span class="fp-prob" style="color:var(--am)">31%</span>
+                </div>
+                <div class="fp-day"><span class="fp-dlbl">Day 6</span>
+                  <div class="fp-track">
+                    <div class="fp-fill" style="width:42%;background:var(--am)"></div>
+                  </div><span class="fp-prob" style="color:var(--am)">42%</span>
+                </div>
+                <div class="fp-day"><span class="fp-dlbl">Day 7</span>
+                  <div class="fp-track">
+                    <div class="fp-fill" style="width:58%;background:var(--rd)"></div>
+                  </div><span class="fp-prob" style="color:var(--rd)">58%</span>
+                </div>
+              </div>
+              <div
+                style="margin-top:12px;padding:8px 10px;background:rgba(255,61,90,.07);border:1px solid rgba(255,61,90,.18);border-radius:4px;font-family:var(--fm);font-size:10px;color:var(--rd)">
+                HIGH risk by Day 7. Retrain scheduled for Day 4.</div>
+              <div style="margin-top:8px">
+                <div class="sdiv">
+                  <div class="sdiv-line"></div>
+                  <div class="sdiv-txt">Root Causes</div>
+                  <div class="sdiv-line"></div>
+                </div>
+                <div style="margin-top:7px;display:flex;flex-direction:column;gap:4px">
+                  <div style="display:flex;justify-content:space-between;font-size:11px"><span
+                      style="color:var(--t2)">Data Drift</span><span style="color:var(--rd)">45%</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:11px"><span
+                      style="color:var(--t2)">Latency Spikes</span><span style="color:var(--am)">28%</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:11px"><span
+                      style="color:var(--t2)">Concept Drift</span><span style="color:var(--am)">18%</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:11px"><span
+                      style="color:var(--t2)">Bias Shift</span><span style="color:var(--cy)">9%</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DATA DRIFT -->
+      <div class="page" id="page-drift">
+        <div class="ph ani">
+          <div>
+            <div class="ph-sub">Module · Data Drift</div>
+            <div class="ph-h">Data <span>Drift Analysis</span></div>
+          </div>
+          <div class="ph-acts"><button class="btn" onclick="doRefresh(this)">↺ Re-analyze</button><button
+              class="btn p" onclick="dlDriftCSV()">⬇ Drift Report</button></div>
+        </div>
+        <div class="mc-row c4 ani1">
+          <div class="mc rd">
+            <div class="mc-ico">⌇</div>
+            <div class="mc-lbl">Features Drifted</div>
+            <div class="mc-val" id="drift-count">4</div>
+            <div class="mc-d"><span class="dn">of 12 features</span></div>
+          </div>
+          <div class="mc am">
+            <div class="mc-ico">⌇</div>
+            <div class="mc-lbl">Avg PSI Score</div>
+            <div class="mc-val" id="drift-psi">0.41</div>
+            <div class="mc-d"><span class="wa">moderate drift</span></div>
+          </div>
+          <div class="mc cy">
+            <div class="mc-ico">⚗</div>
+            <div class="mc-lbl">KS-Test Fails</div>
+            <div class="mc-val" id="drift-ks">2</div>
+            <div class="mc-d"><span class="dn">p-value &lt; 0.05</span></div>
+          </div>
+          <div class="mc pu">
+            <div class="mc-ico">🔀</div>
+            <div class="mc-lbl">Concept Drift</div>
+            <div class="mc-val" id="drift-concept" style="font-size:17px;padding-top:5px">Detected</div>
+            <div class="mc-d"><span class="dn">label shift 12.4%</span></div>
+          </div>
+        </div>
+        <div class="row ani2">
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit">◈ Feature Drift Table</div>
+              <div class="prow"><button class="ptag on">All</button><button class="ptag">High</button><button
+                  class="ptag">Moderate</button></div>
+            </div>
+            <div class="pbody np">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Feature</th>
+                    <th>PSI Score</th>
+                    <th>KS-Stat</th>
+                    <th>p-value</th>
+                    <th>Mean Δ</th>
+                    <th>Variance Δ</th>
+                    <th>Drift Type</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="drift-tbody">
+                  <tr>
+                    <td style="color:var(--t3);font-family:var(--fm)">01</td>
+                    <td><span class="mid">loan_amount</span></td>
+                    <td><span style="color:var(--rd);font-family:var(--fd);font-weight:700">0.78</span></td>
+                    <td>0.31</td>
+                    <td><span style="color:var(--rd)">0.001</span></td>
+                    <td><span style="color:var(--rd)">+18.4%</span></td>
+                    <td><span style="color:var(--rd)">+22.1%</span></td>
+                    <td><span class="tag tr">Data Drift</span></td>
+                    <td><span class="tag tr">HIGH</span></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--t3);font-family:var(--fm)">02</td>
+                    <td><span class="mid">annual_income</span></td>
+                    <td><span style="color:var(--rd);font-family:var(--fd);font-weight:700">0.65</span></td>
+                    <td>0.28</td>
+                    <td><span style="color:var(--rd)">0.003</span></td>
+                    <td><span style="color:var(--rd)">+14.2%</span></td>
+                    <td><span style="color:var(--rd)">+19.8%</span></td>
+                    <td><span class="tag tr">Data Drift</span></td>
+                    <td><span class="tag tr">HIGH</span></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--t3);font-family:var(--fm)">03</td>
+                    <td><span class="mid">credit_score</span></td>
+                    <td><span style="color:var(--am);font-family:var(--fd);font-weight:700">0.44</span></td>
+                    <td>0.19</td>
+                    <td><span style="color:var(--am)">0.021</span></td>
+                    <td><span style="color:var(--am)">+7.1%</span></td>
+                    <td><span style="color:var(--am)">+11.3%</span></td>
+                    <td><span class="tag ta">Data Drift</span></td>
+                    <td><span class="tag ta">MODERATE</span></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--t3);font-family:var(--fm)">04</td>
+                    <td><span class="mid">applicant_age</span></td>
+                    <td><span style="color:var(--gn);font-family:var(--fd);font-weight:700">0.09</span></td>
+                    <td>0.05</td>
+                    <td><span style="color:var(--gn)">0.34</span></td>
+                    <td><span style="color:var(--gn)">+0.6%</span></td>
+                    <td><span style="color:var(--gn)">+1.4%</span></td>
+                    <td><span class="tag tg">Stable</span></td>
+                    <td><span class="tag tg">STABLE</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="panel ani3">
+          <div class="phead">
+            <div class="ptit">◎ Prediction Drift — Approval / Rejection Summary</div>
+          </div>
+          <div class="pbody" style="padding:16px">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <div
+                style="background:var(--bg4);border:1px solid var(--brd);border-radius:4px;padding:14px;text-align:center">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-bottom:6px;letter-spacing:.1em">
+                  CURRENT APPROVAL</div>
+                <div id="drift-approval-cur"
+                  style="font-family:var(--fd);font-size:26px;font-weight:700;color:var(--gn)">59.2%</div>
+                <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-top:4px">live data</div>
+              </div>
+              <div
+                style="background:var(--bg4);border:1px solid var(--brd);border-radius:4px;padding:14px;text-align:center">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-bottom:6px;letter-spacing:.1em">
+                  BASELINE APPROVAL</div>
+                <div id="drift-approval-base"
+                  style="font-family:var(--fd);font-size:26px;font-weight:700;color:var(--cy)">62.0%</div>
+                <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-top:4px">training reference</div>
+              </div>
+              <div
+                style="background:var(--bg4);border:1px solid rgba(255,61,90,.2);border-radius:4px;padding:14px;text-align:center">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-bottom:6px;letter-spacing:.1em">
+                  DRIFT DELTA</div>
+                <div id="drift-delta" style="font-family:var(--fd);font-size:26px;font-weight:700;color:var(--rd)">−2.8%
+                </div>
+                <div style="font-family:var(--fm);font-size:9px;color:var(--rd);margin-top:4px">above threshold</div>
+              </div>
+              <div
+                style="background:var(--bg4);border:1px solid rgba(255,171,0,.2);border-radius:4px;padding:14px;text-align:center">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-bottom:6px;letter-spacing:.1em">
+                  TREND</div>
+                <div style="font-family:var(--fd);font-size:26px;font-weight:700;color:var(--am)">↓ DRIFT</div>
+                <div style="font-family:var(--fm);font-size:9px;color:var(--am);margin-top:4px">monitoring active</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREDICTIONS -->
+      <div class="page" id="page-predictions">
+        <div class="ph ani">
+          <div>
+            <div class="ph-sub">Module · Inference Layer</div>
+            <div class="ph-h">Predictions <span>Dashboard</span></div>
+          </div>
+          <div class="ph-acts"><button class="btn p" onclick="dlCSV()">⬇ Download CSV</button><button class="btn"
+              onclick="document.getElementById('csv-upload-input').click()"
+              style="border-color:var(--gn);color:var(--gn)">⊕ Upload Live CSV</button></div>
+        </div>
+        <div class="mc-row c5 ani1">
+          <div class="mc gn">
+            <div class="mc-ico">▸</div>
+            <div class="mc-lbl">Total Predictions</div>
+            <div class="mc-val" id="pred-total">—</div>
+            <div class="mc-d"><span class="up">today's count</span></div>
+          </div>
+          <div class="mc cy">
+            <div class="mc-ico">✓</div>
+            <div class="mc-lbl">Approved</div>
+            <div class="mc-val" id="pred-approved-count">—</div>
+            <div class="mc-d"><span class="up" id="pred-approval-rate">—%</span> approval rate</div>
+          </div>
+          <div class="mc rd">
+            <div class="mc-ico">✗</div>
+            <div class="mc-lbl">Rejected</div>
+            <div class="mc-val" id="pred-rejected-count">—</div>
+            <div class="mc-d"><span class="dn" id="pred-rejection-rate">—%</span> rejection rate</div>
+          </div>
+          <div class="mc am">
+            <div class="mc-ico">◎</div>
+            <div class="mc-lbl">Avg Confidence</div>
+            <div class="mc-val" id="pred-conf-avg">—</div>
+            <div class="mc-d"><span class="wa">across all batches</span></div>
+          </div>
+          <div class="mc pu">
+            <div class="mc-ico">⚠</div>
+            <div class="mc-lbl">Anomalies</div>
+            <div class="mc-val" id="pred-anomaly-count">—</div>
+            <div class="mc-d"><span class="dn" id="pred-anomaly-pct">0.3%</span> flagged</div>
+          </div>
+        </div>
+        <div class="panel ani2" style="margin-bottom:0">
+          <div class="phead">
+            <div class="ptit"><span class="dot dot-g"></span>Live Data Feed — CSV Bulk Upload</div>
+            <div class="prow"><span id="upload-model-badge"
+                style="font-family:var(--fm);font-size:9px;color:var(--cy);letter-spacing:.08em">MODEL: XGBoost
+                v3.0.2</span></div>
+          </div>
+          <div class="pbody">
+            <div class="upload-zone" id="upload-zone" ondragover="event.preventDefault();this.classList.add('drag')"
+              ondragleave="this.classList.remove('drag')"
+              ondrop="event.preventDefault();this.classList.remove('drag');handleCSVDrop(event)">
+              <input type="file" id="csv-upload-input" accept=".csv" onchange="handleCSVSelect(event)">
+              <div style="font-size:22px;margin-bottom:8px;color:var(--cy);font-family:var(--fd);font-weight:700">△</div>
+              <div style="font-family:var(--fd);font-size:13px;color:var(--cy);margin-bottom:4px">Drop CSV file here or
+                click to browse</div>
+              <div style="font-family:var(--fm);font-size:9px;color:var(--t3)">Accepts loan_approval CSV format · All
+                rows will be fed through the active model</div>
+            </div>
+            <div class="upload-prog" id="upload-prog">
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span
+                  style="font-family:var(--fm);font-size:9px;color:var(--cy);letter-spacing:.1em"
+                  id="upload-status">UPLOADING…</span><span style="font-family:var(--fm);font-size:9px;color:var(--t3)"
+                  id="upload-file-name">—</span></div>
+              <div class="upload-prog-bar">
+                <div class="upload-prog-fill" id="upload-prog-fill"></div>
+              </div>
+            </div>
+            <div class="upload-result" id="upload-result">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="font-family:var(--fd);font-size:14px;font-weight:700;color:var(--gn)"
+                  id="upload-result-title">✓ Upload Complete</div>
+                <span class="tag tg" id="upload-result-tag">SUCCESS</span>
+              </div>
+              <div class="upload-stat-grid">
+                <div class="upload-stat">
+                  <div class="upload-stat-val" style="color:var(--cy)" id="ur-total">—</div>
+                  <div class="upload-stat-lbl">PROCESSED</div>
+                </div>
+                <div class="upload-stat">
+                  <div class="upload-stat-val" style="color:var(--gn)" id="ur-approved">—</div>
+                  <div class="upload-stat-lbl">APPROVED</div>
+                </div>
+                <div class="upload-stat">
+                  <div class="upload-stat-val" style="color:var(--rd)" id="ur-rejected">—</div>
+                  <div class="upload-stat-lbl">REJECTED</div>
+                </div>
+                <div class="upload-stat">
+                  <div class="upload-stat-val" style="color:var(--am)" id="ur-anomalies">—</div>
+                  <div class="upload-stat-lbl">ANOMALIES</div>
+                </div>
+              </div>
+              <div style="margin-top:10px;display:flex;gap:12px;align-items:center">
+                <span style="font-family:var(--fm);font-size:9px;color:var(--t3)">AVG CONFIDENCE</span>
+                <span style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--cy)" id="ur-conf">—</span>
+                <span style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-left:8px">APPROVAL RATE</span>
+                <span style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--gn)" id="ur-rate">—</span>
+                <span style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-left:8px">MODEL</span>
+                <span style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--pu)"
+                  id="ur-model">—</span>
+              </div>
+              <div
+                style="margin-top:10px;padding:8px 10px;background:rgba(0,255,157,.06);border:1px solid rgba(0,255,157,.15);border-radius:4px;font-family:var(--fm);font-size:10px;color:var(--gn)"
+                id="ur-drift-note">✓ Data ingested — navigate to Drift or Overview to see live drift analysis</div>
+            </div>
+          </div>
+        </div>
+        <div class="row ani2" style="margin-top:14px">
+          <div class="panel" style="flex:0 0 580px">
+            <div class="phead">
+              <div class="ptit">◇ Single Prediction (Live)</div>
+            </div>
+            <div class="pbody">
+              <div
+                style="margin-bottom:10px;display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg4);border:1px solid var(--brd);border-radius:var(--r)">
+                <span
+                  style="font-family:var(--fm);font-size:9px;color:var(--t3);letter-spacing:.1em;white-space:nowrap">MODEL</span>
+                <select id="fi-model"
+                  style="flex:1;background:var(--bg0);border:1px solid var(--brd2);color:var(--cy);font-family:var(--fm);font-size:10px;padding:4px 8px;border-radius:3px;outline:none;cursor:pointer">
+                  <option value="xgb">XGBoost v3.0.2 — Best Accuracy</option>
+                  <option value="rf">Random Forest v2.0.0</option>
+                  <option value="lasso">Lasso (L1 Logistic Regression) v1.0.0</option>
+                </select>
+              </div>
+              <div class="form-grid">
+                <div class="fg"><label>Annual Income (₹)</label><input type="number" id="fi-income" value="5000000">
+                </div>
+                <div class="fg"><label>Loan Amount (₹)</label><input type="number" id="fi-loan" value="10000000"></div>
+                <div class="fg"><label>CIBIL Score</label><input type="number" id="fi-credit" value="650" min="300"
+                    max="900"></div>
+                <div class="fg"><label>Loan Term (Years)</label><input type="number" id="fi-tenure" value="10" min="1"
+                    max="20"></div>
+                <div class="fg"><label>No. of Dependents</label><input type="number" id="fi-dep" value="2" min="0"
+                    max="10"></div>
+                <div class="fg"><label>Education</label><select id="fi-edu">
+                    <option value="Graduate">Graduate</option>
+                    <option value="Not Graduate">Not Graduate</option>
+                  </select></div>
+                <div class="fg"><label>Self Employed</label><select id="fi-emp">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select></div>
+                <div class="fg"><label>Residential Assets (₹)</label><input type="number" id="fi-res" value="2000000"
+                    min="0"></div>
+                <div class="fg"><label>Bank Asset Value (₹)</label><input type="number" id="fi-bank" value="500000"
+                    min="0"></div>
+              </div>
+              <button onclick="runPrediction()"
+                style="margin-top:12px;width:100%;padding:10px;background:var(--cy2);border:1px solid var(--cy3);color:var(--cy);font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:var(--r);transition:all .2s;"
+                onmouseover="this.style.background='rgba(0,230,255,.22)'"
+                onmouseout="this.style.background='var(--cy2)'">RUN PREDICTION</button>
+              <div class="pred-result" id="pred-result">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                  <div>
+                    <div
+                      style="font-family:var(--fm);font-size:9px;color:var(--t3);letter-spacing:.12em;margin-bottom:4px">
+                      PREDICTION RESULT</div>
+                    <div class="pred-res-val" id="pred-res-val" style="color:var(--gn)">APPROVED</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div
+                      style="font-family:var(--fm);font-size:9px;color:var(--t3);letter-spacing:.12em;margin-bottom:4px">
+                      CONFIDENCE</div>
+                    <div style="font-family:var(--fd);font-size:24px;font-weight:700;color:var(--cy)"
+                      id="pred-conf-val">87.4%</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span
+                    style="font-family:var(--fm);font-size:9px;color:var(--t3)">RISK LEVEL</span><span class="tag tg"
+                    id="pred-risk-tag">LOW RISK</span></div>
+                <div style="height:6px;background:var(--brd);border-radius:3px;overflow:hidden">
+                  <div id="pred-conf-bar"
+                    style="height:100%;border-radius:3px;background:var(--gn);transition:width .8s ease;width:87%">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit">◎ Confidence Score Distribution</div>
+            </div>
+            <div class="pbody" style="padding:12px 14px"><canvas id="conf-chart" height="155"></canvas></div>
+          </div>
+          <div class="panel" style="flex:0 0 270px">
+            <div class="phead">
+              <div class="ptit">▤ SHAP Feature Impact</div>
+            </div>
+            <div class="pbody">
+              <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-bottom:10px;letter-spacing:.07em">
+                FEATURE CONTRIBUTION TO PREDICTION</div>
+              <div class="shap-row"><span class="shap-feat">credit_score</span>
+                <div class="shap-center">
+                  <div class="shap-zero"></div>
+                  <div class="shap-bar-pos" style="width:38%;background:rgba(0,255,157,.7)"></div>
+                </div><span class="shap-val" style="color:var(--gn)">+0.38</span>
+              </div>
+              <div class="shap-row"><span class="shap-feat">annual_income</span>
+                <div class="shap-center">
+                  <div class="shap-zero"></div>
+                  <div class="shap-bar-pos" style="width:28%;background:rgba(0,255,157,.6)"></div>
+                </div><span class="shap-val" style="color:var(--gn)">+0.28</span>
+              </div>
+              <div class="shap-row"><span class="shap-feat">loan_amount</span>
+                <div class="shap-center">
+                  <div class="shap-zero"></div>
+                  <div class="shap-bar-neg" style="right:50%;width:22%;background:rgba(255,61,90,.7)"></div>
+                </div><span class="shap-val" style="color:var(--rd)">−0.22</span>
+              </div>
+              <div class="shap-row"><span class="shap-feat">employment</span>
+                <div class="shap-center">
+                  <div class="shap-zero"></div>
+                  <div class="shap-bar-pos" style="width:18%;background:rgba(0,230,255,.6)"></div>
+                </div><span class="shap-val" style="color:var(--cy)">+0.18</span>
+              </div>
+              <div class="shap-row"><span class="shap-feat">loan_tenure</span>
+                <div class="shap-center">
+                  <div class="shap-zero"></div>
+                  <div class="shap-bar-neg" style="right:50%;width:14%;background:rgba(255,171,0,.7)"></div>
+                </div><span class="shap-val" style="color:var(--am)">−0.14</span>
+              </div>
+              <div class="shap-row"><span class="shap-feat">applicant_age</span>
+                <div class="shap-center">
+                  <div class="shap-zero"></div>
+                  <div class="shap-bar-pos" style="width:10%;background:rgba(168,85,247,.6)"></div>
+                </div><span class="shap-val" style="color:var(--pu)">+0.10</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row ani3">
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit">▲ Prediction Volume — 24h</div>
+            </div>
+            <div class="pbody" style="padding:12px 14px"><canvas id="vol-chart" height="140"></canvas></div>
+          </div>
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit">🍩 Approval vs Rejection Ratio</div>
+            </div>
+            <div class="pbody" style="padding:12px 14px;display:flex;align-items:center;gap:20px">
+              <canvas id="approval-chart" width="160" height="160" style="flex-shrink:0"></canvas>
+              <div style="flex:1">
+                <div id="pred-chart-rate"
+                  style="font-family:var(--fd);font-size:28px;font-weight:700;color:var(--gn);margin-bottom:6px">—%
+                </div>
+                <div style="font-family:var(--fm);font-size:9px;color:var(--t3);letter-spacing:.1em;margin-bottom:12px">
+                  APPROVAL RATE</div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--t2)">✅
+                      Approved</span><span id="pred-chart-app" style="color:var(--gn);font-weight:600">—</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--t2)">❌
+                      Rejected</span><span id="pred-chart-rej" style="color:var(--rd);font-weight:600">—</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--t2)">⚠
+                      Anomalous</span><span id="pred-chart-ano" style="color:var(--am);font-weight:600">—</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel" style="flex:0 0 240px">
+            <div class="phead">
+              <div class="ptit">🎲 Risk Score Gauge</div>
+            </div>
+            <div class="pbody" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+              <div class="gauge-wrap"><canvas id="risk-gauge" width="140" height="140"></canvas>
+                <div class="gauge-center">
+                  <div class="gauge-val" style="color:var(--am)">MED</div>
+                  <div class="gauge-lbl">AVG RISK</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px"><span class="tag tg">LOW 42%</span><span class="tag ta">MED
+                  38%</span><span class="tag tr">HIGH 20%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODEL COMPARISON -->
+      <div class="page" id="page-comparison">
+        <div class="ph ani">
+          <div>
+            <div class="ph-sub">Module · Model Comparison</div>
+            <div class="ph-h">Model <span>Comparison</span></div>
+          </div>
+          <div class="ph-acts"><button class="btn" onclick="dlRegistryCSV()">⬇ Report</button></div>
+        </div>
+        <div class="row ani1">
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit">🕸 Radar — Model Performance</div>
+            </div>
+            <div class="pbody" style="padding:12px 14px;display:flex;justify-content:center"><canvas id="radar-chart"
+                width="320" height="280"></canvas></div>
+          </div>
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit">▲ ROC Curves</div>
+            </div>
+            <div class="pbody" style="padding:12px 14px"><canvas id="roc-chart" height="248"></canvas></div>
+          </div>
+        </div>
+        <div class="row ani2">
+          <div class="panel col">
+            <div class="phead">
+              <div class="ptit">▤ Full Model Comparison</div>
+            </div>
+            <div class="pbody np">
+              <table class="cmp-table">
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    <th id="cmp-name-lasso">Lasso LR (v1.0.0)</th>
+                    <th id="cmp-name-rf">Random Forest (v2.0.0)</th>
+                    <th id="cmp-name-xgb">XGBoost (v3.0.2) ⭐</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="cmp-feat">Accuracy</td>
+                    <td id="cmp-acc-lasso" class="cmp-low">98.3%</td>
+                    <td id="cmp-acc-rf" class="cmp-best">99.2% ★</td>
+                    <td id="cmp-acc-xgb" class="cmp-mid">92.4%</td>
+                  </tr>
+                  <tr>
+                    <td class="cmp-feat">📌 Precision</td>
+                    <td class="cmp-low">98.4%</td>
+                    <td class="cmp-best">99.3% ★</td>
+                    <td class="cmp-mid">91.8%</td>
+                  </tr>
+                  <tr>
+                    <td class="cmp-feat">🔁 Recall</td>
+                    <td class="cmp-low">98.2%</td>
+                    <td class="cmp-best">99.1% ★</td>
+                    <td class="cmp-mid">90.5%</td>
+                  </tr>
+                  <tr>
+                    <td class="cmp-feat">⚖ F1-Score</td>
+                    <td class="cmp-low">0.983</td>
+                    <td class="cmp-best">0.992 ★</td>
+                    <td class="cmp-mid">0.911</td>
+                  </tr>
+                  <tr>
+                    <td class="cmp-feat">⏱ Latency (P99)</td>
+                    <td class="cmp-best">8ms ★</td>
+                    <td class="cmp-mid">24ms</td>
+                    <td class="cmp-low">42ms</td>
+                  </tr>
+                  <tr>
+                    <td class="cmp-feat">Drift Resistance</td>
+                    <td class="cmp-low">Low</td>
+                    <td class="cmp-mid">Medium</td>
+                    <td class="cmp-best">High ★</td>
+                  </tr>
+                  <tr>
+                    <td class="cmp-feat">AUC-ROC</td>
+                    <td class="cmp-low">0.891</td>
+                    <td class="cmp-mid">0.921</td>
+                    <td class="cmp-best">0.948 ★</td>
+                  </tr>
+                  <tr>
+                    <td class="cmp-feat">Stability Score</td>
+                    <td class="cmp-low">72</td>
+                    <td class="cmp-mid">84</td>
+                    <td class="cmp-best">91 ★</td>
+                  </tr>
+                  <tr>
+                    <td class="cmp-feat">⚖ Bias Score</td>
+                    <td class="cmp-low">High</td>
+                    <td class="cmp-mid">Medium</td>
+                    <td class="cmp-best">Low ★</td>
+                  </tr>
+                  <tr>
+                    <td class="cmp-feat">Ranking Score</td>
+                    <td class="cmp-low">78.2</td>
+                    <td class="cmp-mid">86.7</td>
+                    <td class="cmp-best">94.2 ★</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel" style="flex:0 0 310px">
+            <div class="phead">
+              <div class="ptit" id="cm-title">🔲 Confusion Matrix — v3</div>
+              <div class="prow"><button class="ptag on" onclick="switchCM('v3', this)">v3</button><button class="ptag"
+                  onclick="switchCM('v2', this)">v2</button><button class="ptag"
+                  onclick="switchCM('v1', this)">v1</button></div>
+            </div>
+            <div class="pbody" style="display:flex;flex-direction:column;align-items:center;gap:16px">
+              <div
+                style="font-family:var(--fm);font-size:9px;color:var(--t3);align-self:flex-start;letter-spacing:.1em">
+                PREDICTED → | ACTUAL ↓</div>
+              <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:4px;width:100%;align-items:center">
+                <div></div>
+                <div
+                  style="text-align:center;font-family:var(--fm);font-size:9px;color:var(--cy);padding:4px;letter-spacing:.08em">
+                  POSITIVE</div>
+                <div
+                  style="text-align:center;font-family:var(--fm);font-size:9px;color:var(--cy);padding:4px;letter-spacing:.08em">
+                  NEGATIVE</div>
+                <div style="font-family:var(--fm);font-size:9px;color:var(--cy);padding:4px 8px;letter-spacing:.06em">
+                  POSITIVE</div>
+                <div class="cm-cell cm-tp">
+                  <div id="cm-tp">6,841</div>
+                  <div class="cm-sub">TRUE POS</div>
+                </div>
+                <div class="cm-cell cm-fn">
+                  <div id="cm-fn">580</div>
+                  <div class="cm-sub">FALSE NEG</div>
+                </div>
+                <div style="font-family:var(--fm);font-size:9px;color:var(--cy);padding:4px 8px;letter-spacing:.06em">
+                  NEGATIVE</div>
+                <div class="cm-cell cm-fp">
+                  <div id="cm-fp">398</div>
+                  <div class="cm-sub">FALSE POS</div>
+                </div>
+                <div class="cm-cell cm-tn">
+                  <div id="cm-tn">4,721</div>
+                  <div class="cm-sub">TRUE NEG</div>
+                </div>
+              </div>
+              <div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+                <div
+                  style="background:var(--bg4);border:1px solid var(--brd);border-radius:4px;padding:10px;text-align:center">
+                  <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-bottom:3px">TPR / RECALL</div>
+                  <div id="cm-tpr" style="font-family:var(--fd);font-size:16px;font-weight:700;color:var(--gn)">92.2%
+                  </div>
+                </div>
+                <div
+                  style="background:var(--bg4);border:1px solid var(--brd);border-radius:4px;padding:10px;text-align:center">
+                  <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-bottom:3px">SPECIFICITY</div>
+                  <div id="cm-spec" style="font-family:var(--fd);font-size:16px;font-weight:700;color:var(--cy)">92.2%
+                  </div>
+                </div>
+                <div
+                  style="background:var(--bg4);border:1px solid var(--brd);border-radius:4px;padding:10px;text-align:center">
+                  <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-bottom:3px">PRECISION</div>
+                  <div id="cm-prec" style="font-family:var(--fd);font-size:16px;font-weight:700;color:var(--am)">94.5%
+                  </div>
+                </div>
+                <div
+                  style="background:var(--bg4);border:1px solid var(--brd);border-radius:4px;padding:10px;text-align:center">
+                  <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-bottom:3px">F1-SCORE</div>
+                  <div id="cm-f1" style="font-family:var(--fd);font-size:16px;font-weight:700;color:var(--pu)">0.933
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel ani3">
+          <div class="phead">
+            <div class="ptit">▤ Feature Importance Comparison</div>
+          </div>
+          <div class="pbody" style="padding:12px 14px"><canvas id="fimp-chart" height="150"></canvas></div>
+        </div>
+      </div>
+
+      <!-- MODEL REGISTRY -->
+      <div class="page" id="page-registry">
+        <div class="ph ani">
+          <div>
+            <div class="ph-sub">Module · Registry</div>
+            <div class="ph-h">Model <span>Registry</span></div>
+          </div>
+          <div class="ph-acts"><button class="btn p" onclick="openRegisterModelModal()">⊕ Register New</button><button class="btn" onclick="dlRegistryCSV()">⬇ Export</button></div>
+        </div>
+        <div class="mc-row c4 ani1">
+          <div class="mc gn">
+            <div class="mc-ico">◉</div>
+            <div class="mc-lbl">Total Models</div>
+            <div class="mc-val">3</div>
+            <div class="mc-d">across <span class="up">2 projects</span></div>
+          </div>
+          <div class="mc cy">
+            <div class="mc-ico">▸</div>
+            <div class="mc-lbl">In Production</div>
+            <div class="mc-val">2</div>
+            <div class="mc-d"><span class="up">active inference</span></div>
+          </div>
+          <div class="mc am">
+            <div class="mc-ico">◐</div>
+            <div class="mc-lbl">In Staging</div>
+            <div class="mc-val">0</div>
+            <div class="mc-d"><span class="wa">none pending</span></div>
+          </div>
+          <div class="mc pu">
+            <div class="mc-ico">◈</div>
+            <div class="mc-lbl">Archived</div>
+            <div class="mc-val">1</div>
+            <div class="mc-d">available to restore</div>
+          </div>
+        </div>
+        <div class="panel ani2">
+          <div class="phead">
+            <div class="ptit">◈ Full Model Registry</div>
+            <div class="prow"><button class="ptag on" onclick="filterRegistry('all',this)">All Models</button><button
+                class="ptag" onclick="filterRegistry('active',this)">Active Only</button></div>
+          </div>
+          <div class="pbody np">
+            <div id="reg-loading"
+              style="padding:28px;text-align:center;color:var(--t3);font-family:var(--fm);font-size:11px">⟳ Loading
+              models from backend…</div>
+            <table class="tbl" id="reg-table" style="display:none">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Model Name</th>
+                  <th>Version</th>
+                  <th>Type</th>
+                  <th>Framework</th>
+                  <th>Status</th>
+                  <th>Accuracy</th>
+                  <th>F1</th>
+                  <th>Latency</th>
+                  <th>Features</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="reg-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI INSIGHTS PAGE -->
+      <div class="page" id="page-insights">
+        <div class="ph ani">
+          <div>
+            <div class="ph-sub">Module · OpenAI — RAG Explainability</div>
+            <div class="ph-h">AI <span>Insights</span></div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn p" onclick="loadInsights(this)">Generate AI Report</button>
+            <button class="btn" onclick="loadInsights(this)">↺ Refresh</button>
+          </div>
+        </div>
+
+        <!-- Source badge row -->
+        <div class="row ani1" style="align-items:center;gap:10px;flex-wrap:wrap">
+          <div id="ai-source-badge"
+            style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;background:var(--pu2);border:1px solid rgba(168,85,247,.3);border-radius:var(--r);font-family:var(--fm);font-size:10px;color:var(--pu)">
+            <span style="font-size:12px;font-family:var(--fd);font-weight:700">AI</span> Powered by <strong>OpenAI gpt-4o-mini</strong> &nbsp;·&nbsp; RAG
+            Pipeline
+          </div>
+          <div id="ai-generated-at" style="font-family:var(--fm);font-size:9px;color:var(--t3)">Not yet generated</div>
+        </div>
+
+        <!-- Loading state -->
+        <div id="ai-loading"
+          style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:60px 20px">
+          <div style="font-size:28px;animation:hexP 1.5s ease-in-out infinite;font-family:var(--fd);font-weight:700;color:var(--pu)">AI</div>
+          <div style="font-family:var(--fd);font-size:16px;color:var(--pu)">OpenAI is analysing your model…</div>
+          <div id="ai-loading-step" style="font-family:var(--fm);font-size:10px;color:var(--t3)">Retrieving drift
+            context…</div>
+        </div>
+
+        <!-- Main content (hidden until generated) -->
+        <div id="ai-content" style="display:none;flex-direction:column;gap:14px">
+
+          <!-- Telemetry Row -->
+          <div class="mc-row c4 ani1" style="margin-bottom:0">
+            <div class="mc cy" style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.15)">
+              <div class="mc-ico" style="color:var(--pu)">⚙</div>
+              <div class="mc-lbl">Pipeline Engine</div>
+              <div class="mc-val" style="font-size:16px;color:var(--pu)">RAG Engine v1.2</div>
+              <div class="mc-d"><span class="up" style="color:var(--pu)">● ACTIVE</span></div>
+            </div>
+            <div class="mc cy" style="background:rgba(0,230,255,0.06);border:1px solid rgba(0,230,255,0.15)">
+              <div class="mc-ico" style="color:var(--cy)">▤</div>
+              <div class="mc-lbl">Context Window</div>
+              <div class="mc-val" id="ai-telemetry-context" style="font-size:16px;color:var(--cy)">—</div>
+              <div class="mc-d"><span class="up" style="color:var(--cy)">Window size: 500</span></div>
+            </div>
+            <div class="mc cy" style="background:rgba(0,255,157,0.06);border:1px solid rgba(0,255,157,0.15)">
+              <div class="mc-ico" style="color:var(--gn)">◷</div>
+              <div class="mc-lbl">LLM Latency</div>
+              <div class="mc-val" id="ai-telemetry-latency" style="font-size:16px;color:var(--gn)">—</div>
+              <div class="mc-d"><span class="up" style="color:var(--gn)">Response speed</span></div>
+            </div>
+            <div class="mc cy" style="background:rgba(255,171,0,0.06);border:1px solid rgba(255,171,0,0.15)">
+              <div class="mc-ico" style="color:var(--am)">◇</div>
+              <div class="mc-lbl">Token Footprint</div>
+              <div class="mc-val" id="ai-telemetry-tokens" style="font-size:16px;color:var(--am)">—</div>
+              <div class="mc-d"><span class="up" style="color:var(--am)">gpt-4o-mini scale</span></div>
+            </div>
+          </div>
+
+          <!-- Summary card -->
+          <div class="panel ani1">
+            <div class="phead">
+              <div class="ptit">▨ AI-Generated Incident Summary</div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <span id="ai-severity-tag" class="tag tc">— SEVERITY</span>
+                <span id="ai-urgency-tag" class="tag tc">— URGENCY</span>
+              </div>
+            </div>
+            <div class="pbody">
+              <div id="ai-summary" style="font-size:13px;color:var(--t1);line-height:1.8;padding:4px 0"></div>
+              <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+                <span style="font-family:var(--fm);font-size:9px;color:var(--t3)">CONTEXT CHUNKS USED</span>
+                <span id="ai-context-count" style="font-family:var(--fd);font-size:13px;color:var(--cy)">—</span>
+                <span style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-left:12px">GENERATED BY</span>
+                <span id="ai-source-label" style="font-family:var(--fd);font-size:11px;color:var(--pu)">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row ani2">
+            <!-- Root Causes -->
+            <div class="panel col">
+              <div class="phead">
+                <div class="ptit">◈ Root Cause Analysis</div>
+              </div>
+              <div class="pbody">
+                <div id="ai-root-causes" style="display:flex;flex-direction:column;gap:10px"></div>
+              </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="panel col">
+              <div class="phead">
+                <div class="ptit">▷ AI Recommendations</div>
+              </div>
+              <div class="pbody">
+                <div id="ai-recommendations" style="display:flex;flex-direction:column;gap:10px"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RAG Pipeline Visualiser -->
+          <div class="panel ani3">
+            <div class="phead">
+              <div class="ptit">⚙ RAG Pipeline — How This Was Generated</div>
+            </div>
+            <div class="pbody">
+              <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;align-items:center">
+                <div
+                  style="background:rgba(18,25,46,.5);border:1px solid rgba(0,230,255,.15);border-radius:var(--r);padding:18px;text-align:center;transition:all .3s cubic-bezier(.4,0,.2,1);" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,230,255,.08)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+                  <div style="font-size:20px;margin-bottom:8px;filter:drop-shadow(0 0 8px rgba(0,230,255,.3));font-family:var(--fd);font-weight:700;color:var(--cy)">△</div>
+                  <div style="font-family:var(--fd);font-size:12px;font-weight:700;color:var(--cy);margin-bottom:5px;letter-spacing:.08em">
+                    RETRIEVE</div>
+                  <div style="font-family:var(--fm);font-size:9px;color:var(--t3);line-height:1.7">Live drift
+                    logs<br>PSI scores<br>Risk metrics<br>Prediction stats</div>
+                </div>
+                <div style="display:flex;align-items:center;padding:0 8px">
+                  <div style="width:32px;height:2px;background:linear-gradient(90deg,var(--cy),var(--am));border-radius:2px;position:relative">
+                    <div style="position:absolute;right:-4px;top:-3px;width:0;height:0;border-left:6px solid var(--am);border-top:4px solid transparent;border-bottom:4px solid transparent"></div>
+                  </div>
+                </div>
+                <div
+                  style="background:rgba(18,25,46,.5);border:1px solid rgba(255,171,0,.15);border-radius:var(--r);padding:18px;text-align:center;transition:all .3s cubic-bezier(.4,0,.2,1);" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(255,171,0,.08)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+                  <div style="font-size:20px;margin-bottom:8px;filter:drop-shadow(0 0 8px rgba(255,171,0,.3));font-family:var(--fd);font-weight:700;color:var(--am)">◇</div>
+                  <div style="font-family:var(--fd);font-size:12px;font-weight:700;color:var(--am);margin-bottom:5px;letter-spacing:.08em">
+                    AUGMENT</div>
+                  <div style="font-family:var(--fm);font-size:9px;color:var(--t3);line-height:1.7">Format
+                    context<br>Build structured<br>prompt with<br>real values</div>
+                </div>
+                <div style="display:flex;align-items:center;padding:0 8px">
+                  <div style="width:32px;height:2px;background:linear-gradient(90deg,var(--am),var(--pu));border-radius:2px;position:relative">
+                    <div style="position:absolute;right:-4px;top:-3px;width:0;height:0;border-left:6px solid var(--pu);border-top:4px solid transparent;border-bottom:4px solid transparent"></div>
+                  </div>
+                </div>
+                <div
+                  style="background:rgba(18,25,46,.5);border:1px solid rgba(168,85,247,.2);border-radius:var(--r);padding:18px;text-align:center;transition:all .3s cubic-bezier(.4,0,.2,1);" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(168,85,247,.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+                  <div style="font-size:20px;margin-bottom:8px;filter:drop-shadow(0 0 8px rgba(168,85,247,.3));font-family:var(--fd);font-weight:700;color:var(--pu)">◎</div>
+                  <div style="font-family:var(--fd);font-size:12px;font-weight:700;color:var(--pu);margin-bottom:5px;letter-spacing:.08em">
+                    GENERATE</div>
+                  <div style="font-family:var(--fm);font-size:9px;color:var(--t3);line-height:1.7">
+                    OpenAI<br>gpt-4o-mini<br>Natural language<br>incident report</div>
+                </div>
+              </div>
+              <div id="ai-raw-context"
+                style="margin-top:16px;background:rgba(4,6,14,.6);border:1px solid rgba(24,34,64,.35);border-radius:8px;padding:14px;font-family:var(--fm);font-size:10px;color:var(--t3);line-height:1.8;display:none">
+              </div>
+              <button onclick="toggleRawContext()"
+                style="margin-top:10px;background:rgba(18,25,46,.4);border:1px solid rgba(24,34,64,.4);color:var(--t3);font-family:var(--fm);font-size:9px;padding:6px 14px;border-radius:6px;cursor:pointer;letter-spacing:.07em;transition:all .2s">▾
+                Show Raw Context Chunks</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Empty state -->
+        <div id="ai-empty"
+          style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:100px 20px">
+          <div style="font-size:40px;filter:drop-shadow(0 0 16px rgba(168,85,247,.3));animation:hexP 2.5s ease-in-out infinite;font-family:var(--fd);font-weight:700;color:var(--pu)">AI</div>
+          <div style="font-family:var(--fd);font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--cy),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">OpenAI GPT-4o-mini is ready</div>
+          <div
+            style="font-family:var(--fm);font-size:11px;color:var(--t3);text-align:center;max-width:400px;line-height:1.8">
+            Click <strong style="color:var(--pu)">Generate AI Report</strong> to run the RAG pipeline.<br>
+            GPT-4o-mini will analyse your live drift data and generate a natural language incident report with root
+            cause analysis and recommendations.
+          </div>
+          <div style="font-family:var(--fm);font-size:9px;color:var(--t4);margin-top:4px;padding:6px 14px;background:rgba(18,25,46,.4);border:1px solid rgba(24,34,64,.3);border-radius:6px">
+            Run some predictions first to generate meaningful drift data.
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // ══════════════════════════════════════════════════════════════════
+    //  MONETRA — API CONFIGURATION
+    //  Change this URL if your backend runs on a different port/host
+    // ══════════════════════════════════════════════════════════════════
+    let API = 'https://monetra-backend-nngy.onrender.com';
+    let savedAPI = localStorage.getItem('monetra_api_url');
+    if (savedAPI === 'http://localhost:8000' || savedAPI === 'http://127.0.0.1:8000' || !savedAPI) {
+      localStorage.setItem('monetra_api_url', API);
+      savedAPI = API;
+    }
+    API = savedAPI;
+
+    Chart.defaults.color = '#3a4f78';
+    Chart.defaults.font.family = "'JetBrains Mono',monospace";
+    Chart.defaults.font.size = 10;
+    const TOOLTIP = { backgroundColor: '#0e1428', borderColor: '#182240', borderWidth: 1, titleColor: '#e8f0ff', bodyColor: '#7a90bb', padding: 10 };
+
+    // ── Clock ─────────────────────────────────────────────────────────
+    (function tick() {
+      const n = new Date(), pad = v => String(v).padStart(2, '0');
+      document.getElementById('clock').textContent = `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+      setTimeout(tick, 1000);
+    })();
+
+    // ── API helpers ────────────────────────────────────────────────────
+    // Always attempt backend — file:// protocol still reaches localhost:8000
+    async function apiFetch(path) {
+      try {
+        const headers = {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        };
+        const key = localStorage.getItem('monetra_openai_api_key');
+        if (key) {
+          headers['X-OpenAI-Key'] = key;
+        }
+        const connector = path.includes('?') ? '&' : '?';
+        const url = API + path + connector + '_t=' + Date.now();
+        const r = await fetch(url, { headers });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return await r.json();
+      } catch (e) {
+        console.warn('API error on', path, e.message);
+        return null;
+      }
+    }
+
+    // ── Connection status badge ────────────────────────────────────────
+    async function checkConnection() {
+      const el = document.getElementById('conn-status');
+      const d = await apiFetch('/health');
+      if (d) {
+        el.textContent = '● CONNECTED'; el.style.color = 'var(--gn)';
+        document.getElementById('synctime').textContent = 'just now';
+      } else {
+        el.textContent = '● OFFLINE'; el.style.color = 'var(--rd)';
+      }
+    }
+
+    // ── Nav ────────────────────────────────────────────────────────────
+    function nav(el) {
+      document.querySelectorAll('.nv').forEach(n => n.classList.remove('on'));
+      el.classList.add('on');
+      const pg = el.dataset.page;
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+      const t = document.getElementById('page-' + pg); if (t) t.classList.add('on');
+      if (pg === 'overview') loadOverview();
+      if (pg === 'monitoring') loadMonitoring();
+      if (pg === 'drift') loadDrift();
+      if (pg === 'insights') showInsightsEmpty();
+      if (pg === 'registry') loadModelRegistry();
+      if (pg === 'predictions') {
+        if (!ci.predictions) { initPredictions(); ci.predictions = true; }
+        loadPredictionsStats();
+      }
+      if (pg === 'comparison' && !ci.comparison) { initComparison(); ci.comparison = true; }
+    }
+    const ci = {};
+
+    function doRefresh(btn) {
+      const t = btn.textContent; btn.textContent = '↺ Syncing…'; btn.style.color = 'var(--cy)';
+      const pg = document.querySelector('.page.on')?.id?.replace('page-', '');
+      checkConnection();
+      if (pg === 'overview') loadOverview();
+      else if (pg === 'monitoring') loadMonitoring();
+      else if (pg === 'drift') loadDrift();
+      else if (pg === 'registry') loadModelRegistry();
+      else if (pg === 'predictions') loadPredictionsStats();
+      setTimeout(() => { btn.textContent = t; btn.style.color = ''; }, 1800);
+    }
+
+    async function resetDemoDB(btn) {
+      if (!confirm("Are you sure you want to reset the database? This will clear all prediction and drift logs, and re-seed 100 healthy baseline predictions.")) {
+        return;
+      }
+      const t = btn.textContent;
+      btn.textContent = 'Resetting…';
+      btn.disabled = true;
+      try {
+        const r = await fetch(API + '/database/reset', { method: 'POST' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const d = await r.json();
+        showToast('✓ ' + d.detail);
+        await loadOverview();
+      } catch (e) {
+        console.error('Reset database failed', e);
+        showToast('Error: could not reset database', true);
+      } finally {
+        btn.textContent = t;
+        btn.disabled = false;
+      }
+    }
+
+    // ── Ptag toggle ────────────────────────────────────────────────────
+    document.querySelectorAll('.prow').forEach(row => {
+      row.querySelectorAll('.ptag').forEach(btn => {
+        btn.addEventListener('click', () => { row.querySelectorAll('.ptag').forEach(b => b.classList.remove('on')); btn.classList.add('on'); });
+      });
+    });
+
+    // ── Chart helpers ─────────────────────────────────────────────────
+    function lineGrad(ctx, h, r, g, b) { const gr = ctx.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, `rgba(${r},${g},${b},.22)`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`); return gr; }
+    function makeGauge(id, pct, clr) { const ctx = document.getElementById(id).getContext('2d'); return new Chart(ctx, { type: 'doughnut', data: { datasets: [{ data: [pct, 100 - pct], backgroundColor: [clr, 'rgba(24,34,64,.8)'], borderWidth: 0, circumference: 240, rotation: 240 }] }, options: { responsive: false, cutout: '76%', plugins: { legend: { display: false }, tooltip: { enabled: false } } } }); }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  OVERVIEW PAGE — loads from /overview + /health
+    // ═══════════════════════════════════════════════════════════════════
+    let ovDriftChart = null, ovAccChart = null, _lastDriftedFeaturesCount = 0;
+    const rd = { '7d': [[90.1, 91.0, 90.7, 91.9, 92.3, 92.0, 92.4], ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']], '30d': [[87.5, 88.8, 89.4, 90.2, 90.8, 91.2, 91.5, 91.8, 92.1, 92.4], Array.from({ length: 10 }, (_, i) => `D${i * 3 + 1}`)], '90d': [[84, 85.5, 86.5, 87.8, 88.5, 89.2, 89.8, 90.4, 91.0, 91.5, 91.8, 92.2, 92.4], Array.from({ length: 13 }, (_, i) => `W${i + 1}`)] };
+    function switchAcc(btn, key) { const [data, labels] = rd[key]; ovAccChart.data.labels = labels; ovAccChart.data.datasets[0].data = data; ovAccChart.data.datasets[1].data = data.map(v => v - 1.3); ovAccChart.data.datasets[2].data = data.map(v => v - 0.6); ovAccChart.update(); }
+
+    async function loadOverview() {
+      const [ov, health, modelsData] = await Promise.all([apiFetch('/overview'), apiFetch('/health'), apiFetch('/models')]);
+
+      // Update active model name dynamically
+      if (modelsData && modelsData.models) {
+        const activeKey = modelsData.active_model;
+        const activeModel = modelsData.models.find(m => m.key === activeKey);
+        if (activeModel) {
+          const badge = document.getElementById('ov-active-badge');
+          const nameEl = document.getElementById('ov-active-model-name');
+          const descEl = document.getElementById('ov-active-model-desc');
+          if (badge) badge.textContent = activeModel.name.split(' ')[0]; // Just first word (e.g., XGBoost, Lasso)
+          if (nameEl) nameEl.textContent = activeModel.name;
+          if (descEl) {
+            const descText = activeKey === 'xgb' ? 'GRADIENT BOOSTING · BINARY CLASSIFICATION' :
+              activeKey === 'rf' ? 'ENSEMBLE · BINARY CLASSIFICATION' : 'LINEAR · BINARY CLASSIFICATION';
+            descEl.textContent = `${descText} · ${activeModel.version || 'v1.0'}`;
+          }
+        }
+      }
+
+      // Metric cards
+      if (ov) {
+        const el = document.getElementById('ov-pred');
+        if (el) el.textContent = ov.total_predictions > 999 ? (ov.total_predictions / 1000).toFixed(1) + 'k' : ov.total_predictions;
+        // Drift alerts card
+        const dc = document.getElementById('ov-drift-count');
+        if (dc) dc.textContent = ov.high_drift_features;
+        // Accuracy card
+        const ac = document.getElementById('ov-accuracy');
+        if (ac) ac.textContent = (health?.accuracy * 100 || 92.4).toFixed(1) + '%';
+        // Update alerts dynamically
+        updateAlerts(ov, health);
+      }
+      if (health) {
+        // Sync all health-derived values across overview & monitoring
+        const hs = health.health_score;
+        const hclr = hs >= 75 ? 'var(--gn)' : hs >= 50 ? 'var(--am)' : 'var(--rd)';
+        // Sidebar health
+        const hel = document.getElementById('sb-health');
+        if (hel) hel.textContent = hs;
+        if (hel) hel.style.color = hclr;
+        // Overview top cards
+        setText('ov-sys-accuracy', (health.accuracy * 100).toFixed(1) + '%');
+        // Active model card details
+        setText('ov-card-acc', (health.accuracy * 100).toFixed(1) + '%');
+        setText('ov-card-f1', health.f1_score.toFixed(3));
+        setText('ov-card-lat', health.latency_p99_ms + 'ms');
+        setText('ov-card-err', (health.error_rate * 100).toFixed(1) + '%');
+        setText('ov-card-health', Math.round(hs) + '/100');
+        const uptimeStr = formatUptime(health.uptime_seconds);
+        setText('ov-card-uptime', uptimeStr);
+        setText('ov-uptime', uptimeStr);
+        // Monitoring gauge text
+        setText('mon-health-val', Math.round(hs));
+        const accPct = (health.accuracy * 100).toFixed(1) + '%';
+        setText('mon-health-acc', accPct);
+        setText('mon-acc-status', health.accuracy >= 0.85 ? 'ABOVE' : 'BELOW');
+        const htag = document.getElementById('mon-health-tag');
+        if (htag) { htag.textContent = health.status === 'healthy' ? 'HEALTHY' : health.status === 'degraded' ? 'DEGRADED' : 'CRITICAL'; htag.className = 'tag ' + (health.status === 'healthy' ? 'tg' : health.status === 'degraded' ? 'ta' : 'tr'); }
+        const fp = Math.round(health.failure_probability * 100);
+        setText('mon-fail-pct', fp + '%');
+        const rtag = document.getElementById('mon-risk-tag');
+        if (rtag) { rtag.textContent = fp > 50 ? 'HIGH RISK' : fp > 25 ? 'MODERATE RISK' : 'LOW RISK'; rtag.className = 'tag ' + (fp > 50 ? 'tr' : fp > 25 ? 'ta' : 'tg'); }
+      }
+
+      // Init acc chart once
+      if (!ovAccChart) {
+        const ctx = document.getElementById('ov-acc-chart').getContext('2d');
+        ovAccChart = new Chart(ctx, { type: 'line', data: { labels: rd['7d'][1], datasets: [{ label: 'Accuracy', data: rd['7d'][0], borderColor: '#00e6ff', backgroundColor: lineGrad(ctx, 148, 0, 230, 255), borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#00e6ff', tension: .4, fill: true }, { label: 'F1-Score×100', data: rd['7d'][0].map(v => v - 1.3), borderColor: '#00ff9d', backgroundColor: lineGrad(ctx, 148, 0, 255, 157), borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#00ff9d', tension: .4, fill: true }, { label: 'Precision', data: rd['7d'][0].map(v => v - 0.6), borderColor: '#ffab00', borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#ffab00', tension: .4, fill: false }] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, padding: 12 } }, tooltip: TOOLTIP }, scales: { x: { grid: { color: 'rgba(24,34,64,.6)' }, ticks: { color: '#3a4f78' } }, y: { min: 86, max: 95, grid: { color: 'rgba(24,34,64,.6)' }, ticks: { color: '#3a4f78', callback: v => v + '%' } } } } });
+      }
+
+      // Drift bar — live from /drift
+      const drift = await apiFetch('/drift');
+      if (drift && drift.features && drift.features.length) {
+        const feats = drift.features.slice(0, 6);
+        const labels = feats.map(f => f.feature.replace('_', ' '));
+        const vals = feats.map(f => f.psi_score);
+        const colors = vals.map(v => v > 0.25 ? 'rgba(255,61,90,.7)' : v > 0.1 ? 'rgba(255,171,0,.65)' : 'rgba(0,255,157,.6)');
+        const bcolors = vals.map(v => v > 0.25 ? '#ff3d5a' : v > 0.1 ? '#ffab00' : '#00ff9d');
+        if (!ovDriftChart) {
+          ovDriftChart = new Chart(document.getElementById('ov-drift-chart').getContext('2d'), { type: 'bar', data: { labels, datasets: [{ label: 'PSI', data: vals, backgroundColor: colors, borderColor: bcolors, borderWidth: 1, borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: TOOLTIP }, scales: { x: { grid: { color: 'rgba(24,34,64,.5)' }, ticks: { color: '#3a4f78' } }, y: { min: 0, max: 1, grid: { color: 'rgba(24,34,64,.5)' }, ticks: { color: '#3a4f78' } } } } });
+        } else {
+          ovDriftChart.data.labels = labels;
+          ovDriftChart.data.datasets[0].data = vals;
+          ovDriftChart.data.datasets[0].backgroundColor = colors;
+          ovDriftChart.update();
+        }
+        // Update overview drift grid
+        updateDriftGrid(feats);
+
+        // Trigger Slack alert if drift status changes
+        const driftedCount = drift.features_drifted || 0;
+        if (driftedCount > 0 && driftedCount !== _lastDriftedFeaturesCount) {
+          sendSlackAlert(
+            `🚨 Monetra Data Drift Alarm`,
+            `Data drift analysis completed.\n- *${driftedCount} features* are exhibiting high distribution drift.\n- Average PSI: *${drift.avg_psi.toFixed(3)}*\n- Active Model: *${health?.model_version || 'unknown'}*`,
+            'HIGH'
+          );
+          _lastDriftedFeaturesCount = driftedCount;
+        } else if (driftedCount === 0 && _lastDriftedFeaturesCount > 0) {
+          sendSlackAlert(
+            `✅ Monetra Data Drift Cleared`,
+            `All feature distributions have returned to stable parameters (0 features drifted).`,
+            'LOW'
+          );
+          _lastDriftedFeaturesCount = 0;
+        }
+      } else if (!ovDriftChart) {
+        new Chart(document.getElementById('ov-drift-chart').getContext('2d'), { type: 'bar', data: { labels: ['loan_amt', 'income', 'device', 'employ', 'credit', 'age'], datasets: [{ label: 'PSI', data: [0.78, 0.65, 0.44, 0.36, 0.14, 0.09], backgroundColor: ['rgba(255,61,90,.7)', 'rgba(255,61,90,.7)', 'rgba(255,171,0,.65)', 'rgba(255,171,0,.65)', 'rgba(0,255,157,.6)', 'rgba(0,255,157,.6)'], borderColor: ['#ff3d5a', '#ff3d5a', '#ffab00', '#ffab00', '#00ff9d', '#00ff9d'], borderWidth: 1, borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: TOOLTIP }, scales: { x: { grid: { color: 'rgba(24,34,64,.5)' }, ticks: { color: '#3a4f78' } }, y: { min: 0, max: 1, grid: { color: 'rgba(24,34,64,.5)' }, ticks: { color: '#3a4f78' } } } } });
+      }
+    }
+
+    function updateDriftGrid(features) {
+      const grid = document.querySelector('#page-overview .drift-grid');
+      if (!grid || !features.length) return;
+      grid.innerHTML = features.slice(0, 6).map(f => {
+        const cls = f.status === 'HIGH' ? 'df-hi' : f.status === 'MODERATE' ? 'df-me' : 'df-lo';
+        const vc = f.status === 'HIGH' ? 'dv-hi' : f.status === 'MODERATE' ? 'dv-me' : 'dv-lo';
+        const pct = Math.min(100, f.psi_score * 100).toFixed(0);
+        return `<div class="di"><div class="di-feat">${f.feature}</div><div class="di-track"><div class="di-fill ${cls}" style="width:${pct}%"></div></div><div class="di-bot"><span class="di-val ${vc}">${f.psi_score.toFixed(2)}</span><span class="di-lbl">${f.status}</span></div></div>`;
+      }).join('');
+    }
+
+    function updateAlerts(ov, health) {
+      // Dynamically update alert list based on live data
+      const container = document.querySelector('#page-overview .al-list');
+      if (!container) return;
+      const alerts = [];
+      if (ov && ov.high_drift_features > 0) alerts.push({ cls: 'cr', ic: '●', t: `High Drift Detected — ${ov.high_drift_features} feature(s)`, d: `Avg PSI: ${(ov.avg_psi || 0).toFixed(3)}. Above threshold.`, tm: 'Live · Loan_v3', sv: 'sv-c', sl: 'CRIT' });
+      if (health && health.failure_probability > 0.3) alerts.push({ cls: 'wa', ic: '●', t: `Failure Risk: ${(health.failure_probability * 100).toFixed(0)}% next 7 days`, d: `Health score ${health.health_score}/100. Monitor closely.`, tm: 'Live', sv: 'sv-w', sl: 'WARN' });
+      if (health && health.error_rate > 0.01) alerts.push({ cls: 'wa', ic: '●', t: `Error Rate Elevated: ${(health.error_rate * 100).toFixed(1)}%`, d: 'Low-confidence predictions above threshold.', tm: 'Live', sv: 'sv-w', sl: 'WARN' });
+      alerts.push({ cls: 'ok', ic: '●', t: 'Monitoring System Active', d: 'All endpoints responding normally.', tm: 'Now', sv: 'sv-o', sl: 'OK' });
+      container.innerHTML = alerts.map(a => `<div class="al ${a.cls}"><div class="al-ic">${a.ic}</div><div class="al-b"><div class="al-t">${a.t}</div><div class="al-d">${a.d}</div><div class="al-tm">${a.tm}</div></div><span class="al-sv ${a.sv}">${a.sl}</span></div>`).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  MONITORING PAGE — loads from /health
+    // ═══════════════════════════════════════════════════════════════════
+    let healthGauge = null, failGauge = null, _lastHealthStatus = 'healthy';
+
+    async function loadMonitoring() {
+      const health = await apiFetch('/health');
+      if (!health) { initMonitoringFallback(); return; }
+
+      // Gauges
+      if (!healthGauge) healthGauge = makeGauge('health-gauge', health.health_score, '#00ff9d');
+      else { healthGauge.data.datasets[0].data = [health.health_score, 100 - health.health_score]; healthGauge.update(); }
+
+      const failPct = Math.round(health.failure_probability * 100);
+      if (!failGauge) failGauge = makeGauge('fail-gauge', failPct, '#ffab00');
+      else { failGauge.data.datasets[0].data = [failPct, 100 - failPct]; failGauge.update(); }
+
+      // Gauge center labels
+      const hgc = document.querySelector('#health-gauge+.gauge-center .gauge-val');
+      if (hgc) { hgc.textContent = health.health_score; hgc.style.color = health.health_score >= 75 ? 'var(--gn)' : health.health_score >= 50 ? 'var(--am)' : 'var(--rd)'; }
+      const hgt = document.querySelector('#health-gauge+.gauge-center+span, .page#page-monitoring .gauge-wrap:first-child + .gauge-center ~ span');
+
+      const fgc = document.querySelector('#fail-gauge+.gauge-center .gauge-val');
+      if (fgc) { fgc.textContent = failPct + '%'; fgc.style.color = failPct > 50 ? 'var(--rd)' : failPct > 25 ? 'var(--am)' : 'var(--gn)'; }
+
+      // Metric cards — update all 4
+      const cards = document.querySelectorAll('#page-monitoring .col.mc-row-inner .mc, #page-monitoring .col .mc');
+      // Instead update via IDs we'll inject
+      setText('mon-accuracy', (health.accuracy * 100).toFixed(1) + '%');
+      setText('mon-precision', (health.precision * 100).toFixed(1) + '%');
+      setText('mon-recall', (health.recall * 100).toFixed(1) + '%');
+      setText('mon-f1', health.f1_score.toFixed(3));
+      setText('mon-errrate', (health.error_rate * 100).toFixed(1) + '%');
+      setText('mon-latency', health.latency_p99_ms + 'ms');
+      setText('mon-throughput', (health.throughput_per_sec / 1000).toFixed(1) + 'k/s');
+      setText('mon-conf', ((health.avg_confidence || 0.847)).toFixed(3));
+      if (health.avg_confidence) setText('mon-conf-pct', ((health.avg_confidence || 0.847) * 100).toFixed(1) + '%');
+
+      // Health status tag
+      const htag = document.querySelector('#page-monitoring .gauge-wrap .gauge-center ~ .tag, #page-monitoring .tag');
+      const statusEl = document.getElementById('mon-health-tag');
+      const hs = health.status || 'healthy';
+      if (statusEl) {
+        statusEl.textContent = hs === 'healthy' ? 'HEALTHY' : hs === 'degraded' ? 'DEGRADED' : 'CRITICAL';
+        statusEl.className = 'tag ' + (hs === 'healthy' ? 'tg' : hs === 'degraded' ? 'ta' : 'tr');
+      }
+      
+      // Trigger Slack Alert if state transitions
+      if (hs !== _lastHealthStatus) {
+        if (hs === 'degraded' || hs === 'critical') {
+          const severity = hs === 'critical' ? 'CRITICAL' : 'MEDIUM';
+          sendSlackAlert(
+            `⚠️ Monetra Model Status Alert (${severity})`,
+            `Model health status has changed to *${hs.toUpperCase()}*.\n- Health Score: *${health.health_score}%*\n- Failure Probability: *${failPct}%*\n- Active Model: *${health.model_version}*`,
+            severity
+          );
+        } else if (hs === 'healthy' && (_lastHealthStatus === 'degraded' || _lastHealthStatus === 'critical')) {
+          sendSlackAlert(
+            `✅ Monetra Model Status Restored`,
+            `Model health status has returned to *HEALTHY*.\n- Health Score: *${health.health_score}%*\n- Active Model: *${health.model_version}*`,
+            'LOW'
+          );
+        }
+        _lastHealthStatus = hs;
+      }
+
+      // Failure probability info
+      setText('mon-fail-pct', failPct + '%');
+      setText('mon-uptime', formatUptime(health.uptime_seconds));
+    }
+
+    function initMonitoringFallback() {
+      if (!healthGauge) healthGauge = makeGauge('health-gauge', 87, '#00ff9d');
+      if (!failGauge) failGauge = makeGauge('fail-gauge', 23, '#ffab00');
+    }
+    function initMonitoring() { loadMonitoring(); }
+
+    function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+    function formatUptime(s) { if (!s) return '—'; const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return h > 0 ? `${h}h ${m}m` : `${m}m`; }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  DRIFT PAGE — loads from /drift
+    // ═══════════════════════════════════════════════════════════════════
+    async function loadDrift() {
+      const drift = await apiFetch('/drift');
+      if (!drift) return;
+
+      // Metric cards
+      setText('drift-count', drift.features_drifted);
+      setText('drift-psi', (drift.avg_psi || 0).toFixed(3));
+      setText('drift-ks', drift.ks_failures);
+      setText('drift-concept', drift.concept_drift ? 'Detected' : 'None');
+      setText('drift-current', (drift.current_approval || 0).toFixed(1) + '%');
+      setText('drift-baseline', (drift.baseline_approval || 62).toFixed(1) + '%');
+      const delta = (drift.drift_delta || 0);
+      const del = document.getElementById('drift-delta');
+      if (del) { del.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%'; del.style.color = Math.abs(delta) > 2 ? 'var(--rd)' : 'var(--gn)'; }
+
+      // Feature drift table
+      const tbody = document.getElementById('drift-tbody');
+      if (tbody && drift.features) {
+        tbody.innerHTML = drift.features.map((f, i) => {
+          const sc = f.status === 'HIGH' ? 'tr' : f.status === 'MODERATE' ? 'ta' : 'tg';
+          const pc = f.status === 'HIGH' ? 'var(--rd)' : f.status === 'MODERATE' ? 'var(--am)' : 'var(--gn)';
+          const ico = f.status === 'HIGH' ? '●' : f.status === 'MODERATE' ? '●' : '●';
+          return `<tr>
+        <td style="color:var(--t3);font-family:var(--fm)">${String(i + 1).padStart(2, '0')}</td>
+        <td><span class="mid">${f.feature}</span></td>
+        <td><span style="color:${pc};font-family:var(--fd);font-weight:700">${(f.psi_score || 0).toFixed(3)}</span></td>
+        <td>${(f.ks_stat || 0).toFixed(3)}</td>
+        <td style="color:${f.p_value < 0.05 ? 'var(--rd)' : 'var(--gn)'}">${(f.p_value || 0).toFixed(3)}</td>
+        <td style="color:${Math.abs(f.mean_delta_pct || 0) > 5 ? 'var(--rd)' : 'var(--gn)'}">${(f.mean_delta_pct || 0) >= 0 ? '+' : ''}${(f.mean_delta_pct || 0).toFixed(1)}%</td>
+        <td style="color:${Math.abs(f.var_delta_pct || 0) > 10 ? 'var(--rd)' : 'var(--gn)'}">${(f.var_delta_pct || 0) >= 0 ? '+' : ''}${(f.var_delta_pct || 0).toFixed(1)}%</td>
+        <td><span class="tag ${sc}">Data Drift</span></td>
+        <td><span class="tag ${sc}">${ico} ${f.status}</span></td>
+      </tr>`;
+        }).join('');
+      }
+
+      // Prediction drift summary boxes
+      setText('drift-approval-cur', (drift.current_approval || 0).toFixed(1) + '%');
+      setText('drift-approval-base', (drift.baseline_approval || 62).toFixed(1) + '%');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  PREDICTIONS PAGE — charts static, prediction form hits /predict
+    // ═══════════════════════════════════════════════════════════════════
+    function loadPredictionsStats() {
+      apiFetch('/overview').then(ov => {
+        if (!ov) return;
+        setText('pred-total', ov.total_predictions.toLocaleString());
+        const approved = ov.approved || 0, rejected = ov.rejected || 0, anomalies = ov.anomalies || 0, total = ov.total_predictions || 1;
+        const prate = ((approved / total) * 100).toFixed(1);
+        setText('pred-approved-count', approved.toLocaleString());
+        setText('pred-rejected-count', rejected.toLocaleString());
+        setText('pred-anomaly-count', anomalies.toLocaleString());
+        setText('pred-conf-avg', ((ov.avg_confidence || 0.847) * 100).toFixed(1) + '%');
+        setText('pred-approval-rate', prate + '%');
+        setText('pred-rejection-rate', (100 - parseFloat(prate)).toFixed(1) + '%');
+        setText('pred-chart-rate', prate + '%');
+        setText('pred-chart-app', approved.toLocaleString());
+        setText('pred-chart-rej', rejected.toLocaleString());
+        setText('pred-chart-ano', anomalies.toLocaleString());
+        const anoP = ((anomalies / total) * 100).toFixed(1);
+        setText('pred-anomaly-pct', anoP + '%');
+      });
+    }
+
+    async function populatePredictionsModelDropdown(activeModelKey) {
+      const select = document.getElementById('fi-model');
+      if (!select) return;
+      
+      const data = await apiFetch('/models');
+      if (!data || !data.models) return;
+      
+      const active = activeModelKey || data.active_model;
+      select.innerHTML = data.models.map(m => 
+        `<option value="${m.key}" ${m.key === active ? 'selected' : ''}>${m.name} (${m.version}) · ${(m.accuracy * 100).toFixed(1)}% acc</option>`
+      ).join('');
+      
+      const uploadBadge = document.getElementById('upload-model-badge');
+      if (uploadBadge) {
+        const am = data.models.find(m => m.key === active);
+        uploadBadge.textContent = am ? `MODEL: ${am.name.toUpperCase()} ${am.version}` : `MODEL: ${active.toUpperCase()}`;
+      }
+    }
+
+    function initPredictions() {
+      populatePredictionsModelDropdown();
+      new Chart(document.getElementById('conf-chart').getContext('2d'), { type: 'bar', data: { labels: ['50-60%', '60-70%', '70-80%', '80-90%', '90-95%', '95-100%'], datasets: [{ label: 'Count', data: [120, 380, 890, 2840, 4120, 4190], backgroundColor: ['rgba(255,61,90,.5)', 'rgba(255,171,0,.5)', 'rgba(255,171,0,.6)', 'rgba(0,230,255,.5)', 'rgba(0,255,157,.6)', 'rgba(0,255,157,.75)'], borderColor: ['#ff3d5a', '#ffab00', '#ffab00', '#00e6ff', '#00ff9d', '#00ff9d'], borderWidth: 1, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: TOOLTIP }, scales: { x: { grid: { color: 'rgba(24,34,64,.4)' }, ticks: { color: '#3a4f78' } }, y: { grid: { color: 'rgba(24,34,64,.4)' }, ticks: { color: '#3a4f78' } } } } });
+      const hrs = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}h`);
+      new Chart(document.getElementById('vol-chart').getContext('2d'), { type: 'bar', data: { labels: hrs, datasets: [{ label: 'Predictions', data: [145, 89, 62, 44, 38, 51, 120, 380, 620, 780, 920, 1100, 1240, 1180, 1050, 980, 1120, 1300, 1180, 940, 720, 540, 380, 210], backgroundColor: hrs.map((_, i) => `rgba(168,85,247,${0.3 + i / 48})`), borderColor: 'rgba(168,85,247,.8)', borderWidth: 1, borderRadius: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: TOOLTIP }, scales: { x: { grid: { color: 'rgba(24,34,64,.3)' }, ticks: { color: '#3a4f78', maxTicksLimit: 8 } }, y: { grid: { color: 'rgba(24,34,64,.3)' }, ticks: { color: '#3a4f78' } } } } });
+      new Chart(document.getElementById('approval-chart').getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [7421, 5119, 38], backgroundColor: ['rgba(0,255,157,.6)', 'rgba(255,61,90,.5)', 'rgba(255,171,0,.6)'], borderColor: ['#00ff9d', '#ff3d5a', '#ffab00'], borderWidth: 1 }], labels: ['Approved', 'Rejected', 'Anomalous'] }, options: { responsive: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { ...TOOLTIP, callbacks: { label: ctx => `${ctx.label}: ${ctx.raw.toLocaleString()}` } } } } });
+      makeGauge('risk-gauge', 55, '#ffab00');
+      loadPredictionsStats();
+    }
+
+    // ── Single prediction — calls real /predict endpoint ────────────────
+    async function runPrediction() {
+      const btn = document.querySelector('[onclick="runPrediction()"]');
+      const orig = btn.textContent;
+      btn.textContent = 'PREDICTING…'; btn.disabled = true;
+
+      const income = +document.getElementById('fi-income').value || 5000000;
+      const loan = +document.getElementById('fi-loan').value || 10000000;
+      const credit = +document.getElementById('fi-credit').value || 650;
+      const tenure = +document.getElementById('fi-tenure').value || 10;
+      const dep = +document.getElementById('fi-dep')?.value || 2;
+      const edu = document.getElementById('fi-edu')?.value || 'Graduate';
+      const emp = document.getElementById('fi-emp')?.value || 'No';
+      const res = +document.getElementById('fi-res')?.value || 2000000;
+      const bank = +document.getElementById('fi-bank')?.value || 500000;
+      const modelKey = document.getElementById('fi-model')?.value || 'xgb';
+
+      const body = {
+        no_of_dependents: dep,
+        education: edu,
+        self_employed: emp,
+        income_annum: income,
+        loan_amount: loan,
+        loan_term: tenure,
+        cibil_score: credit,
+        residential_assets_value: res,
+        commercial_assets_value: 0,
+        luxury_assets_value: 0,
+        bank_asset_value: bank,
+      };
+
+      let result = null;
+      try {
+        const r = await fetch(API + `/predict?model=${modelKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (r.ok) result = await r.json();
+      } catch (e) { console.warn('Predict error', e); }
+
+      btn.textContent = orig; btn.disabled = false;
+
+      if (result) {
+        const approved = result.prediction === 'APPROVED';
+        document.getElementById('pred-res-val').textContent = result.prediction;
+        document.getElementById('pred-res-val').style.color = approved ? 'var(--gn)' : 'var(--rd)';
+        document.getElementById('pred-conf-val').textContent = result.confidence_pct || ((result.confidence * 100).toFixed(1) + '%');
+        document.getElementById('pred-conf-bar').style.width = (result.confidence * 100) + '%';
+        document.getElementById('pred-conf-bar').style.background = approved ? 'var(--gn)' : 'var(--rd)';
+        const rt = document.getElementById('pred-risk-tag');
+        const rl = result.risk_level || 'LOW';
+        rt.textContent = rl === 'LOW' ? 'LOW RISK' : rl === 'MEDIUM' ? 'MEDIUM RISK' : 'HIGH RISK';
+        rt.className = 'tag ' + (rl === 'LOW' ? 'tg' : rl === 'MEDIUM' ? 'ta' : 'tr');
+
+        // Update SHAP feature weights if returned
+        if (result.feature_weights && Object.keys(result.feature_weights).length) {
+          updateSHAP(result.feature_weights);
+        }
+      } else {
+        // Fallback to local calculation if backend offline
+        const score = (credit / 900) * 0.5 + (income / loan > 0.5 ? 0.3 : 0.1) + (dep <= 2 ? 0.1 : 0.05) + Math.random() * 0.1;
+        const conf = Math.min(0.99, Math.max(0.51, score));
+        const approved = conf > 0.55;
+        document.getElementById('pred-res-val').textContent = approved ? 'APPROVED' : 'REJECTED';
+        document.getElementById('pred-res-val').style.color = approved ? 'var(--gn)' : 'var(--rd)';
+        document.getElementById('pred-conf-val').textContent = (conf * 100).toFixed(1) + '%';
+        document.getElementById('pred-conf-bar').style.width = (conf * 100) + '%';
+        document.getElementById('pred-conf-bar').style.background = approved ? 'var(--gn)' : 'var(--rd)';
+        const rt = document.getElementById('pred-risk-tag');
+        rt.textContent = conf > 0.8 ? 'LOW RISK' : conf > 0.6 ? 'MEDIUM RISK' : 'HIGH RISK';
+        rt.className = 'tag ' + (conf > 0.8 ? 'tg' : conf > 0.6 ? 'ta' : 'tr');
+        // Offline badge
+        const resDiv = document.getElementById('pred-result');
+        const offBadge = resDiv.querySelector('.offline-note') || Object.assign(document.createElement('div'), { className: 'offline-note' });
+        offBadge.style.cssText = 'margin-top:8px;font-family:var(--fm);font-size:9px;color:var(--am);';
+        offBadge.textContent = '⚠ Backend offline — local estimate only';
+        resDiv.appendChild(offBadge);
+      }
+      document.getElementById('pred-result').classList.add('show');
+    }
+
+    function updateSHAP(fw) {
+      const keys = ['credit_score', 'annual_income', 'loan_amount', 'employment_type', 'loan_tenure', 'applicant_age'];
+      const colors = { '+': { bg: 'rgba(0,255,157,.7)', cl: 'var(--gn)' }, '-': { bg: 'rgba(255,61,90,.7)', cl: 'var(--rd)' }, '0': { bg: 'rgba(0,230,255,.6)', cl: 'var(--cy)' } };
+      const rows = document.querySelectorAll('#page-predictions .shap-row');
+      keys.forEach((k, i) => {
+        const v = fw[k] || fw[k.replace('_type', '')] || 0;
+        const row = rows[i]; if (!row) return;
+        const bar = row.querySelector('.shap-bar-pos,.shap-bar-neg');
+        const val = row.querySelector('.shap-val');
+        if (val) val.textContent = (v >= 0 ? '+' : '') + v.toFixed(2);
+        const pct = Math.min(48, Math.abs(v) * 100) + '%';
+        if (bar) {
+          bar.style.width = pct;
+          bar.style.background = v >= 0 ? 'rgba(0,255,157,.7)' : 'rgba(255,61,90,.7)';
+          if (val) val.style.color = v >= 0 ? 'var(--gn)' : 'var(--rd)';
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  MODEL COMPARISON — static charts (academic comparison)
+    // ═══════════════════════════════════════════════════════════════════
+    function initComparison() {
+      new Chart(document.getElementById('radar-chart').getContext('2d'), { type: 'radar', data: { labels: ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'Latency', 'Stability', 'Bias Resist.', 'Drift Resist.'], datasets: [{ label: 'v1.0.0 — Lasso LR (98.3% acc)', data: [98, 98, 98, 98, 97, 85, 78, 72], borderColor: 'rgba(255,61,90,.8)', backgroundColor: 'rgba(255,61,90,.08)', pointBackgroundColor: '#ff3d5a', borderWidth: 1.5, pointRadius: 3 }, { label: 'v2.0.0 — Random Forest (99.2% acc)', data: [99, 99, 99, 99, 90, 92, 85, 80], borderColor: 'rgba(255,171,0,.8)', backgroundColor: 'rgba(255,171,0,.08)', pointBackgroundColor: '#ffab00', borderWidth: 1.5, pointRadius: 3 }, { label: 'v3.0.2 — XGBoost (92.4% acc)', data: [92, 92, 91, 91, 80, 91, 82, 78], borderColor: 'rgba(0,255,157,.9)', backgroundColor: 'rgba(0,255,157,.08)', pointBackgroundColor: '#00ff9d', borderWidth: 2, pointRadius: 4 }] }, options: { responsive: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, padding: 12 } }, tooltip: TOOLTIP }, scales: { r: { min: 40, max: 100, grid: { color: 'rgba(24,34,64,.8)' }, angleLines: { color: 'rgba(24,34,64,.8)' }, pointLabels: { color: '#7a90bb', font: { size: 9 } }, ticks: { color: '#1e2e50', backdropColor: 'transparent', stepSize: 20 } } } } });
+      function roc(auc) { return Array.from({ length: 20 }, (_, i) => { const fpr = i / 19; return { x: fpr, y: Math.min(1, Math.pow(fpr, 1 / (auc * 3 - 1.8))) }; }); }
+      new Chart(document.getElementById('roc-chart').getContext('2d'), { type: 'line', data: { datasets: [{ label: 'Random', data: [{ x: 0, y: 0 }, { x: 1, y: 1 }], borderColor: 'rgba(58,79,120,.6)', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, tension: 0, fill: false }, { label: 'v1 — Lasso (AUC=0.891)', data: roc(0.891), borderColor: 'rgba(255,61,90,.7)', borderWidth: 1.5, pointRadius: 0, tension: .3, fill: false }, { label: 'v2 — Random Forest (AUC=0.921)', data: roc(0.921), borderColor: 'rgba(255,171,0,.8)', borderWidth: 1.5, pointRadius: 0, tension: .3, fill: false }, { label: 'v3 — XGBoost (AUC=0.948)', data: roc(0.948), borderColor: '#00ff9d', backgroundColor: 'rgba(0,255,157,.04)', borderWidth: 2.5, pointRadius: 0, tension: .3, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, parsing: { xAxisKey: 'x', yAxisKey: 'y' }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, padding: 12 } }, tooltip: TOOLTIP }, scales: { x: { min: 0, max: 1, title: { display: true, text: 'False Positive Rate', color: '#3a4f78' }, grid: { color: 'rgba(24,34,64,.5)' }, ticks: { color: '#3a4f78' } }, y: { min: 0, max: 1, title: { display: true, text: 'True Positive Rate', color: '#3a4f78' }, grid: { color: 'rgba(24,34,64,.5)' }, ticks: { color: '#3a4f78' } } } } });
+      new Chart(document.getElementById('fimp-chart').getContext('2d'), { type: 'bar', data: { labels: ['credit_score', 'annual_income', 'loan_amount', 'loan_tenure', 'employment', 'applicant_age'], datasets: [{ label: 'Lasso v1', data: [0.28, 0.22, 0.19, 0.14, 0.10, 0.07], backgroundColor: 'rgba(255,61,90,.5)', borderColor: '#ff3d5a', borderWidth: 1, borderRadius: 2 }, { label: 'Random Forest v2', data: [0.31, 0.24, 0.18, 0.12, 0.09, 0.06], backgroundColor: 'rgba(255,171,0,.5)', borderColor: '#ffab00', borderWidth: 1, borderRadius: 2 }, { label: 'XGBoost v3', data: [0.34, 0.26, 0.17, 0.11, 0.08, 0.04], backgroundColor: 'rgba(0,255,157,.55)', borderColor: '#00ff9d', borderWidth: 1, borderRadius: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, padding: 12 } }, tooltip: TOOLTIP }, scales: { x: { grid: { color: 'rgba(24,34,64,.4)' }, ticks: { color: '#3a4f78' } }, y: { grid: { color: 'rgba(24,34,64,.4)' }, ticks: { color: '#3a4f78' } } } } });
+    }
+
+    const cmData = {
+      v1: { tp: '7,287', fn: '134', fp: '118', tn: '5,001', tpr: '98.2%', spec: '97.7%', prec: '98.4%', f1: '0.983' },
+      v2: { tp: '7,354', fn: '67', fp: '51', tn: '5,068', tpr: '99.1%', spec: '99.0%', prec: '99.3%', f1: '0.992' },
+      v3: { tp: '6,841', fn: '580', fp: '398', tn: '4,721', tpr: '92.2%', spec: '92.2%', prec: '94.5%', f1: '0.933' }
+    };
+
+    function switchCM(v, btn) {
+      const prow = btn.closest('.prow');
+      if (prow) {
+        prow.querySelectorAll('.ptag').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+      }
+      document.getElementById('cm-title').innerHTML = `🔲 Confusion Matrix — ${v}`;
+      const d = cmData[v];
+      if (d) {
+        document.getElementById('cm-tp').textContent = d.tp;
+        document.getElementById('cm-fn').textContent = d.fn;
+        document.getElementById('cm-fp').textContent = d.fp;
+        document.getElementById('cm-tn').textContent = d.tn;
+        document.getElementById('cm-tpr').textContent = d.tpr;
+        document.getElementById('cm-spec').textContent = d.spec;
+        document.getElementById('cm-prec').textContent = d.prec;
+        document.getElementById('cm-f1').textContent = d.f1;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  CSV EXPORT — fetches real data from /overview
+    // ═══════════════════════════════════════════════════════════════════
+    async function dlCSV() {
+      const ov = await apiFetch('/overview');
+      const rows = [['metric', 'value'],
+      ['total_predictions', ov?.total_predictions || 0],
+      ['approved', ov?.approved || 0],
+      ['rejected', ov?.rejected || 0],
+      ['anomalies', ov?.anomalies || 0],
+      ['approval_rate_pct', ov?.approval_rate || 0],
+      ['avg_confidence', ov?.avg_confidence || 0],
+      ['health_score', ov?.health_score || 0],
+      ['risk_level', ov?.risk_level || 'LOW'],
+      ['avg_psi', ov?.avg_psi || 0],
+      ['high_drift_features', ov?.high_drift_features || 0],
+      ['last_updated', ov?.last_updated || new Date().toISOString()]
+      ];
+      const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'monetra_report.csv'; a.click();
+    }
+
+    async function dlDriftCSV() {
+      const drift = await apiFetch('/drift?window=500');
+      if (!drift || !drift.features) {
+        showToast('Error: could not fetch drift data to export', true);
+        return;
+      }
+      const rows = [
+        ['feature', 'psi_score', 'ks_stat', 'p_value', 'mean_delta_pct', 'var_delta_pct', 'status']
+      ];
+      drift.features.forEach(f => {
+        rows.push([
+          f.feature,
+          f.psi_score,
+          f.ks_stat,
+          f.p_value,
+          f.mean_delta_pct,
+          f.var_delta_pct,
+          f.status
+        ]);
+      });
+      const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'monetra_drift_report.csv'; a.click();
+      showToast('✓ Drift report exported successfully!');
+    }
+
+    async function dlRegistryCSV() {
+      const data = await apiFetch('/models');
+      if (!data || !data.models) {
+        showToast('Error: could not fetch model data to export', true);
+        return;
+      }
+      const rows = [
+        ['name', 'version', 'framework', 'accuracy', 'status', 'created_at']
+      ];
+      data.models.forEach(m => {
+        rows.push([
+          m.name,
+          m.version,
+          m.framework,
+          m.accuracy,
+          m.key === data.active_model ? 'ACTIVE' : 'IDLE',
+          m.created_at
+        ]);
+      });
+      const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'monetra_model_registry.csv'; a.click();
+      showToast('✓ Model registry exported successfully!');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  CSV BULK UPLOAD — feeds live data through the model
+    // ═══════════════════════════════════════════════════════════════════
+    function handleCSVSelect(event) {
+      const file = event.target.files[0];
+      if (file) uploadCSV(file);
+    }
+    function handleCSVDrop(event) {
+      const file = event.dataTransfer.files[0];
+      if (file && file.name.endsWith('.csv')) uploadCSV(file);
+      else showToast('Please drop a .csv file', true);
+    }
+
+    async function uploadCSV(file) {
+      const prog = document.getElementById('upload-prog');
+      const fill = document.getElementById('upload-prog-fill');
+      const status = document.getElementById('upload-status');
+      const fname = document.getElementById('upload-file-name');
+      const result = document.getElementById('upload-result');
+
+      // Reset
+      result.classList.remove('show');
+      prog.classList.add('show');
+      fill.style.width = '0%';
+      fname.textContent = file.name;
+      status.textContent = 'UPLOADING…';
+      status.style.color = 'var(--cy)';
+
+      // Animate progress
+      let pct = 0;
+      const pInt = setInterval(() => { pct = Math.min(pct + Math.random() * 15, 90); fill.style.width = pct + '%'; }, 300);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const r = await fetch(API + '/upload-csv', { method: 'POST', body: formData });
+        clearInterval(pInt);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const d = await r.json();
+
+        fill.style.width = '100%';
+        status.textContent = '✓ COMPLETE';
+        status.style.color = 'var(--gn)';
+
+        // Show result
+        setTimeout(() => {
+          result.classList.add('show');
+          setText('ur-total', d.processed.toLocaleString());
+          setText('ur-approved', d.approved.toLocaleString());
+          setText('ur-rejected', d.rejected.toLocaleString());
+          setText('ur-anomalies', d.anomalies.toLocaleString());
+          setText('ur-conf', (d.avg_confidence * 100).toFixed(1) + '%');
+          setText('ur-rate', d.approval_rate.toFixed(1) + '%');
+          setText('ur-model', d.model_used.toUpperCase());
+
+          if (d.errors > 0) {
+            document.getElementById('ur-drift-note').textContent =
+              `⚠ ${d.errors} rows failed — ${d.processed} processed successfully. Check Drift page for analysis.`;
+            document.getElementById('ur-drift-note').style.background = 'rgba(255,171,0,.06)';
+            document.getElementById('ur-drift-note').style.borderColor = 'rgba(255,171,0,.15)';
+            document.getElementById('ur-drift-note').style.color = 'var(--am)';
+          }
+
+          showToast(`✓ ${d.processed} predictions processed from ${file.name}`);
+
+          // Refresh overview stats
+          loadOverview();
+          loadPredictionsStats();
+        }, 400);
+      } catch (e) {
+        clearInterval(pInt);
+        fill.style.width = '100%';
+        fill.style.background = 'var(--rd)';
+        status.textContent = '✗ FAILED';
+        status.style.color = 'var(--rd)';
+        showToast('Upload failed: ' + e.message, true);
+      }
+
+      // Reset file input so same file can be uploaded again
+      document.getElementById('csv-upload-input').value = '';
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  AI INSIGHTS PAGE — calls /explain which uses OpenAI gpt-4o-mini
+    // ═══════════════════════════════════════════════════════════════════
+    let _lastInsightContext = [];
+
+    function showInsightsEmpty() {
+      // Auto-load insights instead of showing empty state
+      const btn = document.querySelector('#page-insights .btn.p');
+      loadInsights(btn);
+    }
+
+    async function loadInsights(btn) {
+      const origText = btn?.textContent;
+      if (btn) { btn.textContent = 'Thinking…'; btn.disabled = true; }
+
+      // Show loading
+      document.getElementById('ai-empty').style.display = 'none';
+      document.getElementById('ai-content').style.display = 'none';
+      document.getElementById('ai-loading').style.display = 'flex';
+
+      const steps = ['Retrieving drift context…', 'Running PSI & KS analysis…', 'Building RAG prompt…', 'Calling OpenAI gpt-4o-mini…', 'Parsing AI response…'];
+      let si = 0;
+      const stepEl = document.getElementById('ai-loading-step');
+      const stepInt = setInterval(() => { if (stepEl && si < steps.length) stepEl.textContent = steps[si++]; }, 900);
+
+      const data = await apiFetch('/explain?window=500');
+
+      clearInterval(stepInt);
+      if (btn) { btn.textContent = origText; btn.disabled = false; }
+
+      if (!data) {
+        document.getElementById('ai-loading').style.display = 'none';
+        document.getElementById('ai-empty').style.display = 'flex';
+        document.getElementById('ai-empty').querySelector('div:nth-child(3)').textContent = 'Could not reach backend. Make sure the server is running.';
+        return;
+      }
+
+      renderInsights(data);
+    }
+
+    function renderInsights(data) {
+      document.getElementById('ai-loading').style.display = 'none';
+      document.getElementById('ai-empty').style.display = 'none';
+      document.getElementById('ai-content').style.display = 'flex';
+
+      // RAG Telemetry
+      const chunksCount = Array.isArray(data.context_used) ? data.context_used.length : 0;
+      setText('ai-telemetry-context', chunksCount + ' Chunks');
+      setText('ai-telemetry-latency', (data.latency_ms || 120) + ' ms');
+      setText('ai-telemetry-tokens', (data.token_count || 420) + ' tokens');
+
+      // Summary
+      document.getElementById('ai-summary').textContent = data.summary || '—';
+
+      // Severity tag
+      const sev = data.severity || 'LOW';
+      const sevEl = document.getElementById('ai-severity-tag');
+      const sevCls = sev === 'CRITICAL' ? 'tr' : sev === 'HIGH' ? 'tr' : sev === 'MEDIUM' ? 'ta' : 'tg';
+      const sevIco = '●';
+      sevEl.textContent = `${sevIco} ${sev}`;
+      sevEl.className = `tag ${sevCls}`;
+
+      // Urgency tag
+      const urg = data.urgency || 'Monitor';
+      const urgEl = document.getElementById('ai-urgency-tag');
+      const urgCls = urg === 'Emergency' ? 'tr' : urg === 'Act Now' ? 'tr' : urg === 'Investigate' ? 'ta' : 'tc';
+      urgEl.textContent = `${urg.toUpperCase()}`;
+      urgEl.className = `tag ${urgCls}`;
+
+      // Source
+      const isAI = data.source === 'openai';
+      document.getElementById('ai-source-label').textContent = isAI ? 'OpenAI gpt-4o-mini' : 'Rule-based Engine';
+      document.getElementById('ai-source-label').style.color = isAI ? 'var(--pu)' : 'var(--am)';
+      document.getElementById('ai-context-count').textContent = chunksCount;
+
+      // Source badge
+      const badge = document.getElementById('ai-source-badge');
+      if (isAI) {
+        badge.style.background = 'var(--pu2)';
+        badge.style.borderColor = 'rgba(168,85,247,.3)';
+        badge.style.color = 'var(--pu)';
+        badge.innerHTML = '<span style="font-size:11px;font-family:var(--fd);font-weight:700">AI</span> Powered by <strong>OpenAI gpt-4o-mini</strong> &nbsp;·&nbsp; RAG Pipeline &nbsp;·&nbsp; <span style="color:var(--gn)">● LIVE AI</span>';
+      } else {
+        badge.style.background = 'var(--am2)';
+        badge.style.borderColor = 'rgba(255,171,0,.2)';
+        badge.style.color = 'var(--am)';
+        badge.innerHTML = '<span style="font-size:11px;font-family:var(--fd);font-weight:700">RULE</span> <strong>Rule-based Engine</strong> &nbsp;·&nbsp; Set OPENAI_API_KEY to enable GPT-4o-mini';
+      }
+
+      // Generated at
+      const genAt = data.generated_at ? new Date(data.generated_at).toLocaleString() : '';
+      document.getElementById('ai-generated-at').textContent = genAt ? `Generated at ${genAt}` : '';
+
+      // Root causes
+      const rcEl = document.getElementById('ai-root-causes');
+      const causes = Array.isArray(data.root_causes) ? data.root_causes : [];
+      rcEl.innerHTML = causes.map((c, i) => {
+        const txt = typeof c === 'object' ? `${c.cause} — ${c.detail || ''}` : c;
+        const sev = typeof c === 'object' ? c.severity : 'MEDIUM';
+        const cls = sev === 'HIGH' ? 'tr' : sev === 'MEDIUM' ? 'ta' : 'tg';
+        const ico = '●';
+        return `<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg4);border:1px solid var(--brd);border-radius:4px;border-left:3px solid ${sev === 'HIGH' ? 'var(--rd)' : sev === 'MEDIUM' ? 'var(--am)' : 'var(--gn)'}">
+      <span style="font-size:12px;margin-top:1px;flex-shrink:0;color:${sev === 'HIGH' ? 'var(--rd)' : sev === 'MEDIUM' ? 'var(--am)' : 'var(--gn)'}">${ico}</span>
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--t1);line-height:1.6">${txt}</div>
+        ${typeof c === 'object' && c.contribution_pct ? `<div style="margin-top:5px;display:flex;align-items:center;gap:6px"><div style="flex:1;height:3px;background:var(--brd);border-radius:2px;overflow:hidden"><div style="height:100%;width:${c.contribution_pct}%;background:${sev === 'HIGH' ? 'var(--rd)' : sev === 'MEDIUM' ? 'var(--am)' : 'var(--gn)'};border-radius:2px"></div></div><span style="font-family:var(--fm);font-size:9px;color:var(--t3)">${c.contribution_pct}% contribution</span></div>` : ''}
+      </div>
+    </div>`;
+      }).join('');
+
+      // Recommendations
+      const recEl = document.getElementById('ai-recommendations');
+      const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
+      recEl.innerHTML = recs.map((r, i) =>
+        `<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg4);border:1px solid var(--brd);border-radius:4px;border-left:3px solid var(--cy)">
+      <span style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--cy);flex-shrink:0;min-width:20px">${i + 1}</span>
+      <div style="font-size:11px;color:var(--t1);line-height:1.6">${r}</div>
+    </div>`
+      ).join('');
+
+      // Raw context
+      if (Array.isArray(data.context_used)) {
+        _lastInsightContext = data.context_used;
+      }
+      const rawEl = document.getElementById('ai-raw-context');
+      if (rawEl && Array.isArray(_lastInsightContext) && _lastInsightContext.length) {
+        rawEl.innerHTML = _lastInsightContext.map((c, i) => {
+          const parts = c.split(' | ');
+          const header = parts[0];
+          const body = parts[1] || '';
+          
+          let badgeColor = 'var(--t3)';
+          let badgeBg = 'rgba(58,79,120,.15)';
+          if (header.includes('HIGH')) { badgeColor = 'var(--rd)'; badgeBg = 'rgba(255,61,90,.15)'; }
+          else if (header.includes('MODERATE')) { badgeColor = 'var(--am)'; badgeBg = 'rgba(255,171,0,.15)'; }
+          else if (header.includes('RISK')) { badgeColor = 'var(--cy)'; badgeBg = 'rgba(0,230,255,.15)'; }
+          else if (header.includes('STATS') || header.includes('SUMMARY')) { badgeColor = 'var(--pu)'; badgeBg = 'rgba(168,85,247,.15)'; }
+          
+          const pills = body.split(' ').map(p => {
+            const kv = p.split('=');
+            if (kv.length === 2) {
+              return `<span style="display:inline-flex;gap:4px;padding:3px 8px;background:var(--bg3);border:1px solid var(--brd);border-radius:4px;font-size:9px"><strong style="color:var(--t2)">${kv[0]}:</strong> <span style="color:var(--cy)">${kv[1]}</span></span>`;
+            }
+            return `<span style="font-size:9px;color:var(--t3)">${p}</span>`;
+          }).join(' ');
+
+          return `<div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-family:var(--fd);font-size:10px;font-weight:700;color:var(--t1)">Chunk #${i+1}</span>
+              <span style="font-family:var(--fm);font-size:8px;font-weight:700;color:${badgeColor};background:${badgeBg};padding:3px 8px;border-radius:4px;letter-spacing:0.05em">${header}</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">${pills}</div>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    function toggleRawContext() {
+      const el = document.getElementById('ai-raw-context');
+      const btn = el?.nextElementSibling;
+      if (!el) return;
+      const showing = el.style.display !== 'none';
+      el.style.display = showing ? 'none' : 'block';
+      if (btn) btn.textContent = showing ? '▾ Show Raw Context Chunks' : '▴ Hide Raw Context Chunks';
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  BOOT
+    // ═══════════════════════════════════════════════════════════════════
+    window.addEventListener('DOMContentLoaded', () => {
+      checkConnection();
+      loadOverview();
+      loadModelRegistry();
+      setInterval(checkConnection, 30000);
+    });
+
+    // ── Model Registry ─────────────────────────────────────────────────
+    let _regData = null;
+    let _regFilter = 'all';
+
+    function filterRegistry(mode, btn) {
+      _regFilter = mode;
+      document.querySelectorAll('#page-registry .ptag').forEach(b => b.classList.remove('on'));
+      if (btn) btn.classList.add('on');
+      renderRegistry(_regData);
+    }
+
+    function renderRegistry(data) {
+      if (!data || !data.models) return;
+      const tbody = document.getElementById('reg-tbody');
+      if (!tbody) return;
+
+      // Model metadata that backend /models doesn't return (f1, framework, latency)
+      const extras = {
+        lasso: { f1: 0.983, framework: 'Scikit-learn', fw_col: 'var(--am)', latency: '8ms' },
+        rf: { f1: 0.992, framework: 'Scikit-learn', fw_col: 'var(--gn)', latency: '24ms' },
+        xgb: { f1: 0.911, framework: 'XGBoost', fw_col: 'var(--cy)', latency: '42ms' },
+      };
+
+      const active = data.active_model;
+      let rows = data.models;
+      if (_regFilter === 'active') rows = rows.filter(m => m.key === active);
+
+      tbody.innerHTML = rows.map((m, i) => {
+        const isActive = m.key === active;
+        const ex = extras[m.key] || {};
+        const accW = Math.round(m.accuracy * 100);
+        const accBar = accW > 92 ? 'hi' : accW > 87 ? 'hi' : 'lo';
+        const f1val = ex.f1 || (m.accuracy - 0.013);
+        const f1col = f1val > 0.98 ? 'var(--gn)' : f1val > 0.90 ? 'var(--gn)' : 'var(--am)';
+        const latCol = ex.latency === '8ms' ? 'var(--gn)' : ex.latency === '24ms' ? 'var(--am)' : 'var(--am)';
+
+        const statusBadge = isActive
+          ? `<span class="tag tg">● Active</span>`
+          : `<span class="tag" style="background:rgba(58,79,120,.2);color:var(--t3);border:1px solid var(--brd)">○ Idle</span>`;
+
+        const activateBtn = isActive
+          ? `<button class="mb" style="color:var(--gn);cursor:default" disabled>✓ Active</button>`
+          : `<button class="mb" onclick="activateModel('${m.key}',this)">▸ Set Active</button>`;
+
+        return `<tr ${isActive ? 'class="active-row"' : ''} id="reg-row-${m.key}">
+      <td style="color:var(--t3);font-family:var(--fm)">${String(i + 1).padStart(3, '0')}</td>
+      <td><span class="mid">${m.name}</span></td>
+      <td><span class="vtag">${m.version}</span></td>
+      <td>${m.type || 'Classification'}</td>
+      <td style="color:${ex.fw_col || 'var(--cy)'};font-family:var(--fm);font-size:10px">${ex.framework || 'Scikit-learn'}</td>
+      <td id="reg-status-${m.key}">${statusBadge}</td>
+      <td><div class="ab"><div class="at"><div class="af ${accBar}" style="width:${accW}%"></div></div>${accW}.0%</div></td>
+      <td style="color:${f1col};font-family:var(--fm)">${f1val.toFixed(3)}</td>
+      <td style="color:${latCol};font-family:var(--fm)">${ex.latency || '—'}</td>
+      <td style="color:var(--t2)">${m.n_features}</td>
+      <td><div class="mbs">${activateBtn}<button class="mb">Logs</button></div></td>
+    </tr>`;
+      }).join('');
+
+      document.getElementById('reg-loading').style.display = 'none';
+      document.getElementById('reg-table').style.display = '';
+    }
+
+    async function activateModel(key, btn) {
+      btn.textContent = '⟳…';
+      btn.disabled = true;
+      try {
+        const r = await fetch(API + '/models/activate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model_key: key })
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const d = await r.json();
+        // Refresh model data
+        await loadModelRegistry();
+        // Show toast
+        showToast(`✓ Active model set to ${d.name} (${d.version})`);
+      } catch (e) {
+        btn.textContent = '▸ Set Active';
+        btn.disabled = false;
+        showToast('Error: could not activate model', true);
+      }
+    }
+
+    function showToast(msg, isErr = false) {
+      let t = document.getElementById('toast-msg');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast-msg';
+        t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-family:var(--fm);font-size:11px;z-index:9999;transition:opacity .4s';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.background = isErr ? '#ff3d5a22' : '#00ff9d22';
+      t.style.color = isErr ? 'var(--rd)' : 'var(--gn)';
+      t.style.border = `1px solid ${isErr ? 'var(--rd)' : 'var(--gn)'}`;
+      t.style.opacity = '1';
+      setTimeout(() => { t.style.opacity = '0'; }, 2500);
+    }
+
+    async function loadModelRegistry() {
+      const data = await apiFetch('/models');
+      _regData = data;
+      if (!data || !data.models) {
+        document.getElementById('reg-loading').textContent = 'Could not reach backend — is the server running?';
+        return;
+      }
+      renderRegistry(data);
+
+      // Update overview mini-registry
+      const ovrTbody = document.getElementById('overview-reg-tbody');
+      if (ovrTbody) {
+        const active = data.active_model;
+        ovrTbody.innerHTML = data.models.map(m => {
+          const isActive = m.key === active;
+          const accW = Math.round(m.accuracy * 100);
+          return `<tr ${isActive ? 'class="active-row"' : ''}><td><span class="mid">${m.name}</span></td>
+        <td><span class="vtag">${m.version}</span></td><td>Classification</td>
+        <td>${isActive ? '<span class="tag tg">● Active</span>' : '<span class="tag" style="background:rgba(58,79,120,.2);color:var(--t3);border:1px solid var(--brd)">○ Idle</span>'}</td>
+        <td><div class="ab"><div class="at"><div class="af hi" style="width:${accW}%"></div></div>${accW}.0%</div></td>
+        <td><div class="mbs"><button class="mb" onclick="activateModel('${m.key}',this)">${isActive ? '✓ Active' : '▸ Activate'}</button></div></td></tr>`;
+        }).join('');
+      }
+
+      // Update the active model card in overview
+      const activeInfo = data.models.find(m => m.key === data.active_model);
+      if (activeInfo) {
+        const nameEl = document.getElementById('ov-active-model-name');
+        const descEl = document.getElementById('ov-active-model-desc');
+        const fwMap = { lasso: 'LOGISTIC REGRESSION', rf: 'RANDOM FOREST', xgb: 'GRADIENT BOOSTING' };
+        if (nameEl) nameEl.textContent = activeInfo.name;
+        if (descEl) descEl.textContent = `${fwMap[data.active_model] || 'ML MODEL'} · BINARY CLASSIFICATION · ${activeInfo.version}`;
+      }
+
+      // Update model comparison table with real accuracy
+      data.models.forEach(m => {
+        const key = m.key;
+        const accPct = (m.accuracy * 100).toFixed(1) + '%';
+        const el = document.getElementById('cmp-acc-' + key);
+        if (el) el.textContent = accPct;
+        const nel = document.getElementById('cmp-name-' + key);
+        if (nel) nel.textContent = m.name + ' (' + m.version + ')';
+      });
+      // Update model selector in prediction form with real data
+      const sel = document.getElementById('fi-model');
+      if (sel && data.models.length) {
+        sel.innerHTML = data.models.map(m =>
+          `<option value="${m.key}"${m.key === data.active_model ? ' selected' : ''}>${m.name} ${m.version} — ${(m.accuracy * 100).toFixed(1)}% acc</option>`
+        ).join('');
+      }
+    }
+
+    // ── Settings Modal Functions ────────────────────────────────────────
+    let PSI_WARNING = parseFloat(localStorage.getItem('monetra_psi_warning')) || 0.10;
+    let PSI_CRITICAL = parseFloat(localStorage.getItem('monetra_psi_critical')) || 0.25;
+    let KS_ALPHA = parseFloat(localStorage.getItem('monetra_ks_alpha')) || 0.05;
+
+     function openSettingsModal() {
+      document.getElementById('settings-api-url').value = API;
+      document.getElementById('settings-slack-webhook').value = localStorage.getItem('monetra_slack_webhook') || '';
+      document.getElementById('settings-openai-key').value = localStorage.getItem('monetra_openai_api_key') || '';
+      document.getElementById('settings-psi-warning').value = PSI_WARNING;
+      document.getElementById('settings-psi-critical').value = PSI_CRITICAL;
+      document.getElementById('settings-ks-alpha').value = KS_ALPHA;
+      document.getElementById('settings-test-status').style.display = 'none';
+      document.getElementById('settings-modal').style.display = 'flex';
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settings-modal').style.display = 'none';
+    }
+
+    function saveSettings() {
+      const newApi = document.getElementById('settings-api-url').value.trim() || 'http://localhost:8000';
+      const newSlack = document.getElementById('settings-slack-webhook').value.trim();
+      const newKey = document.getElementById('settings-openai-key').value.trim();
+      const newWarn = parseFloat(document.getElementById('settings-psi-warning').value) || 0.10;
+      const newCrit = parseFloat(document.getElementById('settings-psi-critical').value) || 0.25;
+      const newAlpha = parseFloat(document.getElementById('settings-ks-alpha').value) || 0.05;
+
+      API = newApi;
+      PSI_WARNING = newWarn;
+      PSI_CRITICAL = newCrit;
+      KS_ALPHA = newAlpha;
+
+      localStorage.setItem('monetra_api_url', API);
+      localStorage.setItem('monetra_slack_webhook', newSlack);
+      localStorage.setItem('monetra_openai_api_key', newKey);
+      localStorage.setItem('monetra_psi_warning', PSI_WARNING.toString());
+      localStorage.setItem('monetra_psi_critical', PSI_CRITICAL.toString());
+      localStorage.setItem('monetra_ks_alpha', KS_ALPHA.toString());
+
+      closeSettingsModal();
+      showToast('✓ Configuration saved successfully!');
+
+      const pg = document.querySelector('.page.on')?.id?.replace('page-', '');
+      if (pg === 'overview') loadOverview();
+      else if (pg === 'monitoring') loadMonitoring();
+      else if (pg === 'drift') loadDrift();
+    }
+
+    async function testSettingsConnection() {
+      const btn = document.getElementById('settings-test-btn');
+      const statusEl = document.getElementById('settings-test-status');
+      const testUrl = document.getElementById('settings-api-url').value.trim() || 'http://localhost:8000';
+      
+      btn.textContent = 'Testing…'; btn.disabled = true;
+      statusEl.style.display = 'block';
+      statusEl.textContent = 'Testing connection...'; statusEl.style.color = 'var(--t3)';
+
+      try {
+        const r = await fetch(testUrl + '/health');
+        if (r.ok) {
+          statusEl.textContent = '✓ Connected successfully!'; statusEl.style.color = 'var(--gn)';
+        } else {
+          statusEl.textContent = `✗ Failed (HTTP ${r.status})`; statusEl.style.color = 'var(--rd)';
+        }
+      } catch (e) {
+        statusEl.textContent = '✗ Connection failed / offline'; statusEl.style.color = 'var(--rd)';
+      } finally {
+        btn.textContent = 'Test Connection'; btn.disabled = false;
+      }
+    }
+
+    async function sendSlackAlert(title, message, severity) {
+      const webhookUrl = localStorage.getItem('monetra_slack_webhook');
+      if (!webhookUrl) return;
+      
+      let color = '#36a64f';
+      if (severity === 'HIGH' || severity === 'CRITICAL' || severity === 'error') color = '#ff3d5a';
+      else if (severity === 'MEDIUM' || severity === 'warning') color = '#ffab00';
+      
+      const payload = {
+        attachments: [
+          {
+            fallback: `${title}: ${message}`,
+            color: color,
+            title: title,
+            text: message,
+            footer: 'Monetra ML Monitor',
+            ts: Math.floor(Date.now() / 1000)
+          }
+        ]
+      };
+      
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        console.warn('Failed to send Slack alert:', e);
+      }
+    }
+
+    // ── Model Registration Functions ────────────────────────────────────
+    function openRegisterModelModal() {
+      document.getElementById('reg-model-key').value = '';
+      document.getElementById('reg-model-name').value = '';
+      document.getElementById('reg-model-version').value = '';
+      document.getElementById('reg-model-framework').value = '';
+      document.getElementById('reg-model-accuracy').value = '';
+      document.getElementById('reg-model-file').value = '';
+      document.getElementById('register-model-modal').style.display = 'flex';
+    }
+
+    function closeRegisterModelModal() {
+      document.getElementById('register-model-modal').style.display = 'none';
+    }
+
+    async function submitRegisterModel() {
+      const key = document.getElementById('reg-model-key').value.trim();
+      const name = document.getElementById('reg-model-name').value.trim();
+      const version = document.getElementById('reg-model-version').value.trim();
+      const framework = document.getElementById('reg-model-framework').value.trim();
+      const accuracy = document.getElementById('reg-model-accuracy').value.trim();
+      const fileInput = document.getElementById('reg-model-file');
+      
+      if (!key || !name || !version || !framework || !accuracy || !fileInput.files.length) {
+        showToast('Please fill in all fields and select a model file.', true);
+        return;
+      }
+
+      const submitBtn = document.getElementById('reg-model-submit');
+      const origText = submitBtn.textContent;
+      submitBtn.textContent = 'Registering…';
+      submitBtn.disabled = true;
+
+      const formData = new FormData();
+      formData.append('model_file', fileInput.files[0]);
+      formData.append('key', key);
+      formData.append('name', name);
+      formData.append('version', version);
+      formData.append('framework', framework);
+      formData.append('accuracy', accuracy);
+
+      try {
+        const res = await fetch(API + '/models/register', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('✓ ' + data.message);
+          closeRegisterModelModal();
+          loadModelRegistry();
+        } else {
+          showToast('Failed: ' + (data.detail || 'Unknown error'), true);
+        }
+      } catch (e) {
+        showToast('Network error: ' + e.message, true);
+      } finally {
+        submitBtn.textContent = origText;
+        submitBtn.disabled = false;
+      }
+    }
+
+    // ── Model Deployment Functions ──────────────────────────────────────
+    async function openDeployModal() {
+      const data = await apiFetch('/models');
+      if (!data || !data.models) {
+        showToast('Error: could not fetch models to deploy', true);
+        return;
+      }
+      
+      const activeModel = data.models.find(m => m.key === data.active_model);
+      document.getElementById('deploy-current-active').textContent = activeModel 
+        ? `${activeModel.name} (${activeModel.version})` 
+        : data.active_model;
+      
+      const select = document.getElementById('deploy-model-select');
+      select.innerHTML = data.models.map(m => 
+        `<option value="${m.key}" ${m.key === data.active_model ? 'selected' : ''}>${m.name} (${m.version}) · ${(m.accuracy * 100).toFixed(1)}% acc</option>`
+      ).join('');
+      
+      document.getElementById('deploy-modal').style.display = 'flex';
+    }
+
+    function closeDeployModal() {
+      document.getElementById('deploy-modal').style.display = 'none';
+    }
+
+    async function submitDeployment() {
+      const select = document.getElementById('deploy-model-select');
+      const targetKey = select.value;
+      
+      const btn = document.getElementById('deploy-submit-btn');
+      const origText = btn.textContent;
+      btn.textContent = '🚀 Deploying…';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(API + '/models/activate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model_key: targetKey })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast(`✓ Model promoted: ${data.name} (${data.version}) is live in production!`);
+          closeDeployModal();
+          
+          populatePredictionsModelDropdown(targetKey);
+          
+          const pg = document.querySelector('.page.on')?.id?.replace('page-', '');
+          if (pg === 'overview') loadOverview();
+          else if (pg === 'monitoring') loadMonitoring();
+          else if (pg === 'drift') loadDrift();
+          else if (pg === 'registry') loadModelRegistry();
+          else if (pg === 'predictions') loadPredictionsStats();
+        } else {
+          showToast('Deployment failed: ' + (data.detail || 'Unknown error'), true);
+        }
+      } catch (e) {
+        showToast('Network error: ' + e.message, true);
+      } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
+      }
+    }
+  </script>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">⚙ System Configuration</h3>
+        <button class="modal-close" onclick="closeSettingsModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">FastAPI Backend URL</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="settings-api-url" class="form-input" style="flex:1" placeholder="http://127.0.0.1:8000">
+            <button class="btn" id="settings-test-btn" onclick="testSettingsConnection()" style="padding:0 16px;white-space:nowrap">Test Connection</button>
+          </div>
+          <span id="settings-test-status" style="font-family:var(--fm);font-size:9px;margin-top:2px;display:none"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Slack Webhook URL (Alert notifications)</label>
+          <input type="text" id="settings-slack-webhook" class="form-input" placeholder="https://hooks.slack.com/services/...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">OpenAI API Key (Required for AI Insights)</label>
+          <input type="password" id="settings-openai-key" class="form-input" placeholder="sk-proj-...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Drift Warning Threshold (PSI)</label>
+          <input type="number" id="settings-psi-warning" class="form-input" step="0.05" min="0.05" max="1.0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Drift Critical Threshold (PSI)</label>
+          <input type="number" id="settings-psi-critical" class="form-input" step="0.05" min="0.05" max="1.0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">KS-Test Alpha Significance</label>
+          <input type="number" id="settings-ks-alpha" class="form-input" step="0.01" min="0.01" max="0.5">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeSettingsModal()">Cancel</button>
+        <button class="btn p" onclick="saveSettings()">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER MODEL MODAL -->
+  <div id="register-model-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">⊕ Register New ML Model</h3>
+        <button class="modal-close" onclick="closeRegisterModelModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Model Key / ID (unique, lowercase)</label>
+          <input type="text" id="reg-model-key" class="form-input" placeholder="e.g. v4_lr">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Model Name</label>
+          <input type="text" id="reg-model-name" class="form-input" placeholder="e.g. Lasso Regression v4">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Version</label>
+          <input type="text" id="reg-model-version" class="form-input" placeholder="e.g. v4.0.0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Framework</label>
+          <input type="text" id="reg-model-framework" class="form-input" placeholder="e.g. Scikit-learn">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Claimed Accuracy (0.0 to 1.0)</label>
+          <input type="number" id="reg-model-accuracy" class="form-input" step="0.001" min="0.5" max="1.0" placeholder="e.g. 0.985">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Model File (.joblib / .pkl)</label>
+          <input type="file" id="reg-model-file" class="form-input" accept=".pkl,.joblib" style="padding:6px 14px">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeRegisterModelModal()">Cancel</button>
+        <button class="btn p" id="reg-model-submit" onclick="submitRegisterModel()">Register Model</button>
+      </div>
+    </div>
+  <!-- DEPLOY MODEL MODAL -->
+  <div id="deploy-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">🚀 Promote Model to Production</h3>
+        <button class="modal-close" onclick="closeDeployModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Current Active Production Model</label>
+          <div id="deploy-current-active" style="font-family:var(--fd);font-size:12px;color:var(--gn);font-weight:700;padding:6px 0">—</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Model Version to Deploy</label>
+          <select id="deploy-model-select" class="form-input" style="width:100%"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeDeployModal()">Cancel</button>
+        <button class="btn p" id="deploy-submit-btn" onclick="submitDeployment()">Confirm Deployment</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

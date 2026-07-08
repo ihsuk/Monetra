@@ -1,0 +1,11 @@
+.DS_Store
+*.zip
+__pycache__/
+.venv/
+# *.db
+*.db-shm
+*.db-wal
+.ipynb_checkpoints/
+.gemini/
+*.tex
+
